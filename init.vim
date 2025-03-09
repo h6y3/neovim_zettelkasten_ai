@@ -218,6 +218,29 @@ endfunction
 
 command! -nargs=1 -complete=file CE call CreateAndEdit(<f-args>)
 
+" Create new Markdown file with template
+function! NewMarkdownFile()
+    let filename = input('New Markdown file: ', '', 'file')
+    if empty(filename)
+        echo "Cancelled"
+        return
+    endif
+    
+    " Add .md extension if not present
+    if filename !~ '\.md$'
+        let filename .= '.md'
+    endif
+    
+    " Create and edit the file
+    call CreateAndEdit(filename)
+    
+    " Apply template
+    call ApplyTemplate('skeleton.md')
+endfunction
+
+command! NewMarkdown call NewMarkdownFile()
+nnoremap <leader>n :NewMarkdown<CR>
+
 " Search in Documents with Telescope
 function! SearchInDocuments()
     lua require('telescope.builtin').find_files({cwd = vim.fn.expand('~/Documents')})

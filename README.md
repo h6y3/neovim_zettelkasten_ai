@@ -158,7 +158,14 @@ Templates can be applied in several ways:
    - Apply a specific template: `:Template template-name.md`
    - Example: `:Template meeting.md`
 
-3. **Behavior**:
+3. **Quick creation of new Markdown files**:
+   - Use `<Space>n` or `:NewMarkdown` to create a new Markdown file
+   - You'll be prompted for a filename (with tab completion support)
+   - The file will be created with directories if needed
+   - The skeleton template will be automatically applied
+   - The cursor will be positioned at the end in insert mode
+
+4. **Behavior**:
    - Templates are inserted at the beginning of the file
    - The cursor is positioned at the end of the file in insert mode
    - The file is marked as modified so it can be saved
@@ -199,6 +206,7 @@ The leader key is set to the space bar (`<Space>`).
 - `<Space>q` - Quick quit
 - `<Space>sv` - Source `init.vim` (reload configuration)
 - `<Space>t` - Apply the Markdown template to current file
+- `<Space>n` - Create a new Markdown file with template
 
 ### Markdown Specific
 
@@ -215,6 +223,12 @@ The leader key is set to the space bar (`<Space>`).
 - **CreateAndEdit** (`CE` command):
   - Creates directories if they don't exist when opening a file
   - Example: `:CE path/that/doesnt/exist/yet/file.md`
+
+- **NewMarkdownFile** (`:NewMarkdown` command):
+  - Interactive prompt for creating new Markdown files with the template
+  - Automatically adds .md extension if omitted
+  - Creates any necessary directories in the path
+  - Applies the skeleton.md template automatically
 
 - **Document Search**:
   - Custom functions for searching specifically in your Documents folder
