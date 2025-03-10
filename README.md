@@ -1,6 +1,6 @@
 # Neovim Configuration
 
-A clean, efficient Neovim setup focused on Markdown editing and templating, featuring the Seoul256 color scheme.
+A clean, efficient Neovim setup focused on Markdown editing and templating, featuring the Seoul256 color scheme with enhanced markdown link autocompletion and backlink features.
 
 ## Table of Contents
 
@@ -8,6 +8,8 @@ A clean, efficient Neovim setup focused on Markdown editing and templating, feat
 - [Plugins](#plugins)
 - [Seoul256 Color Scheme](#seoul256-color-scheme)
 - [Markdown Workflow (mkdnflow)](#markdown-workflow-mkdnflow)
+- [Markdown Link Autocompletion](#markdown-link-autocompletion)
+- [Backlinks System](#backlinks-system)
 - [NERDTree (File Explorer)](#nerdtree-file-explorer)
 - [Telescope (Fuzzy Finder)](#telescope-fuzzy-finder)
 - [Text Manipulation Plugins](#text-manipulation-plugins)
@@ -21,6 +23,7 @@ A clean, efficient Neovim setup focused on Markdown editing and templating, feat
 - [File Operations](#file-operations)
 - [Markdown Specific](#markdown-specific)
 - [Searching](#searching)
+- [Performance Optimizations](#performance-optimizations)
 - [Custom Functions](#custom-functions)
 - [Customization](#customization)
 
@@ -29,241 +32,236 @@ A clean, efficient Neovim setup focused on Markdown editing and templating, feat
 1. Ensure you have Neovim installed (version 0.5.0 or later recommended).
 2. Clone this repository or copy the files to your Neovim configuration directory:
 
- ```bash
+```bash
 git clone https://github.com/yourusername/nvim-config.git ~/.config/nvim
- ```
+```
 
- or manually copy the files to `~/.config/nvim/`.
+or manually copy the files to `~/.config/nvim/`.
 
 3. Launch Neovim. Vim-plug will automatically install and plugins will be installed.
 
- ```bash
+```bash
 nvim
- ```
+```
 
-4. If plugins don't install automatically, run `:PlugInstall` within Neovim.
+4. Inside Neovim, install all plugins:
+
+```
+:PlugInstall
+```
 
 ## Plugins
 
-### Seoul256 Color Scheme
+This configuration includes the following plugins:
 
-A low-contrast dark color scheme that's easy on the eyes.
+- **seoul256.vim**: A low-contrast color scheme for Vim
+- **mkdnflow.nvim**: Markdown workflow enhancement
+- **nvim-cmp**: Autocompletion framework with custom markdown link source
+- **LuaSnip**: Snippet engine for autocompletion
+- **NERDTree**: File explorer
+- **vim-commentary**: Easy code commenting
+- **vim-surround**: Text surrounding operations
+- **auto-pairs**: Auto-close brackets and quotes
+- **telescope.nvim**: Fuzzy finder for files and text
 
-- **Usage**: The color scheme is set automatically in the configuration.
-- **Customization**: Adjust background darkness by setting `g:seoul256_background` between 233-239 (darker) or 252-256 (lighter) before the colorscheme is loaded.
+## Markdown Workflow (mkdnflow)
 
-### Markdown Workflow (mkdnflow)
+The configuration integrates [mkdnflow.nvim](https://github.com/jakewvincent/mkdnflow.nvim) for enhanced Markdown editing with the following features:
 
-Provides enhanced navigation and editing capabilities for Markdown files.
+- **Link Navigation**: Quickly move between and follow links
+- **Link Transformation**: Convert spaces to dashes and lowercase for filenames
+- **Link Concealing**: Hide markdown syntax for cleaner reading
+- **Heading Navigation**: Jump between headings with `[[` and `]]`
+- **File Creation**: Create new markdown files from links
 
-- **Navigation**:
-- `<Enter>` - Follow links
-- `<Tab>` - Jump to next link
-- `<Shift-Tab>` - Jump to previous link
-- `]]` - Jump to next heading
-- `[[` - Jump to previous heading
-- `<Backspace>` - Go back in navigation history
-- `<Delete>` - Go forward in navigation history
-- **Creating new files**:
-- `<Space>nf` - Create a new Markdown file from the current buffer
+### Key mappings:
 
-### NERDTree (File Explorer)
+- `<CR>`: Follow link under cursor
+- `<Tab>`: Go to next link
+- `<S-Tab>`: Go to previous link
+- `<BS>`: Go back after following a link
+- `<Del>`: Go forward in navigation history
+- `<leader>fl`: Alternative follow link command
+- `<leader>cl`: Create link from selected text
+- `<leader>dl`: Destroy link but keep text
+- `<leader>mt`: Mark selected text as a span
+- `<leader>tt`: Toggle to-do item
 
-A file system explorer for navigating the directory structure.
+## Markdown Link Autocompletion
 
-- **Toggle NERDTree**: `<Space>e`
-- **Find current file in tree**: `<Space>f`
-- **Basic operations within NERDTree**:
-- `o` or `<Enter>` - Open files and directories
-- `t` - Open in new tab
-- `i` - Open in split
-- `s` - Open in vertical split
-- `I` - Toggle hidden files
-- `R` - Refresh the tree
-- `m` - Show the NERDTree menu (including file operations)
+The configuration includes a custom completion system for markdown links:
 
-### Telescope (Fuzzy Finder)
+- **Auto-suggestion**: Shows existing markdown files when typing `[[` or `[](` 
+- **Snippet Support**: Use Tab to navigate through link placeholders
+- **Smart Completion**: Context-aware completion that only activates in markdown files
 
-Highly extendable fuzzy finder over lists.
+### Key mappings and shortcuts:
 
-- **Finding files**: `<Space>ff`
-- **Searching text**: `<Space>fg` (requires ripgrep)
-- **Listing buffers**: `<Space>fb`
-- **Viewing help tags**: `<Space>fh`
-- **Documents folder search**:
-- `<Space>fd` - Find files in Documents folder
-- `<Space>fD` - Search text in Documents folder
-- **Inside Telescope**:
-- `<Ctrl-n>/<Ctrl-p>` - Next/previous item
-- `<Ctrl-c>` - Close telescope
-- `<Enter>` - Select item
-- `<Ctrl-x>` - Split horizontal
-- `<Ctrl-v>` - Split vertical
+- `;l`: Insert a standard markdown link `[]()`
+- `;w`: Insert a wiki-style link `[[]]`
+- `<C-Space>`: Trigger completion manually
+- When typing `[[` or `[](`, completion menu appears automatically
 
-### Text Manipulation Plugins
+## Backlinks System
 
-- **vim-commentary**:
-- `gcc` - Comment/uncomment current line
-- `gc` (visual mode) - Comment/uncomment selected lines
-- **vim-surround**:
-- `cs"'` - Change surrounding quotes from `"` to `'`
-- `ds"` - Delete surrounding `"`
-- `ysiw]` - Surround word with brackets
-- `vS"` (visual mode) - Surround selection with `"`
-- **auto-pairs**:
-- Automatically inserts matching brackets, quotes, etc.
-- `<Ctrl-h>` (insert mode) - Delete matching pairs
-- `<Alt-p>` - Toggle auto-pairs
+A powerful backlink system to track references between markdown files:
+
+- **Backlink Search**: Find all references to the current file
+- **Automatic Sections**: Templates include a backlinks section
+- **Link Maintenance**: Automatically update links on file save
+
+### Key mappings:
+
+- `<leader>bl`: Search for all references to the current file
+- `:UpdateLinks`: Manually update all links in the current file
+- `:UpdateBacklinks`: Update the backlinks section in the current file
+
+## NERDTree (File Explorer)
+
+The configuration includes NERDTree for file exploration:
+
+- **Toggle**: Show/hide file explorer
+- **Find Current File**: Locate the current file in the explorer
+
+### Key mappings:
+
+- `<leader>e`: Toggle NERDTree
+- `<leader>f`: Find current file in NERDTree
+
+## Telescope (Fuzzy Finder)
+
+Integrated Telescope for powerful fuzzy finding:
+
+- **File Finding**: Search for files by name
+- **Content Search**: Search for patterns within files
+- **Buffer Management**: Search open buffers
+- **Help Documentation**: Search available help topics
+- **Document Search**: Search specifically within Documents directory
+- **Backlink Search**: Search for references to current file
+
+### Key mappings:
+
+- `<leader>ff`: Find files
+- `<leader>fg`: Live grep (search file contents)
+- `<leader>fb`: Search buffers
+- `<leader>fh`: Search help tags
+- `<leader>fd`: Search files in Documents
+- `<leader>fD`: Search content in Documents
+- `<leader>bl`: Search for backlinks to current file
+
+## Text Manipulation Plugins
+
+Several plugins to enhance text editing capabilities:
+
+- **vim-commentary**: Comment code with `gcc` (line) or `gc` (visual selection)
+- **vim-surround**: Manipulate surrounding characters (parentheses, quotes, tags)
+- **auto-pairs**: Automatically insert closing brackets, quotes, etc.
 
 ## Templating System
 
-This configuration includes a robust templating system that makes it easy to start new files with predefined structures.
+A flexible templating system for creating new markdown files:
+
+- **Predefined Templates**: Store templates in `~/.config/nvim/templates/`
+- **Variables**: Use `{{date}}`, `{{title}}`, and `{{tags}}` in templates
+- **Tag System**: Easily add formatted tags to new files
+- **Backlinks Section**: Templates now include a backlinks section
 
 ### Creating Templates
 
-Templates are stored in `~/.config/nvim/templates/` and can be created for any file type.
-The default template for Markdown files (`skeleton.md`) looks like:
+Add templates to the `~/.config/nvim/templates/` directory. For example, create a `skeleton.md` file:
 
 ```markdown
----
-title: {{title}}
-date: {{date}}
-tags: {{tags}}
----
 # {{title}}
+
+Date: {{date}}
+Tags: {{tags}}
+
+## Content
+
+## Backlinks
+
 ```
-
-To create a new template:
-
-1. Create a file in the templates directory:
-
- ```bash
-mkdir -p ~/.config/nvim/templates
-nvim ~/.config/nvim/templates/meeting.md
- ```
-
-2. Add your template content with optional variables like `{{date}}`, `{{title}}`, and `{{tags}}`.
 
 ### Using Templates
 
-Templates can be applied in several ways:
-
-1. **Automatic application**:
-
-- New Markdown files will automatically use the `skeleton.md` template.
-- Example: `nvim new-document.md`
-
-2. **Manual application**:
-
-- Apply the default Markdown template: `<Space>t` or `:MDTemplate`
-- Apply a specific template: `:Template template-name.md`
-- Example: `:Template meeting.md`
-
-3. **Quick creation of new Markdown files**:
-
-- Use `<Space>n` or `:NewMarkdown` to create a new Markdown file
-- You'll be prompted for a filename (with tab completion support)
-- The file will be created with directories if needed
-- You'll be prompted to enter tags (comma-separated)
-- The skeleton template will be automatically applied
-- The cursor will be positioned at the end in insert mode
-
-4. **Behavior**:
-
-- Templates are inserted at the beginning of the file
-- The cursor is positioned at the end of the file in insert mode
-- The file is marked as modified so it can be saved
+- `<leader>t`: Apply the default template
+- `<leader>n`: Create a new markdown file with template
+- `:Template filename.md`: Apply a specific template
 
 ### Template Variables
 
-Templates support variable expansion:
+- `{{date}}`: Current date (formatted as YYYY-MM-DD)
+- `{{title}}`: Title from filename or specified during creation
+- `{{tags}}`: Tags specified during template application
 
-- `{{date}}` - Expands to the current date (format: YYYY-MM-DD)
-- `{{title}}` - Expands to the filename without extension
-- `{{tags}}` - Expands to formatted tags with double brackets
-Example of how variables expand:
-- For a file named `project-plan.md`, `{{title}}` becomes `project-plan`
-- `{{date}}` always expands to the current date, e.g., `2023-03-09`
-- For tags input `life, stoicism`, `{{tags}}` becomes `[[life]], [[stoicism]]`
-You can add custom variables by modifying the `ApplyTemplate` function in `init.vim`.
+## Tag System
 
-### Tag System
+The configuration includes a tagging system for markdown files:
 
-The configuration includes a tag system for Markdown files:
-
-- **When creating a new Markdown file**, you'll be prompted to enter tags
-- **Format**: Enter tags as a comma-separated list (e.g., `productivity, notes, ideas`)
-- **Automatic formatting**: Tags are automatically formatted with double brackets
-- **Example**: Input `life, stoicism` becomes `[[life]], [[stoicism]]` in the front matter
-- **Empty tags**: If no tags are entered, the template will include `[[]]` as a placeholder
-- **Usage in templates**: Use the `{{tags}}` variable in your templates to include formatted tags
+- **Tag Formatting**: Tags are automatically formatted as `[[tag]]`
+- **Tag Input**: Enter tags separated by commas when creating a file
 
 ## Key Mappings
 
-The leader key is set to the space bar (`<Space>`).
-
 ### General Navigation
 
-- **Window navigation**:
-- `<Ctrl-h>` - Move to left window
-- `<Ctrl-j>` - Move to window below
-- `<Ctrl-k>` - Move to window above
-- `<Ctrl-l>` - Move to right window
-- **Buffer navigation**:
-- `<Space>bn` - Next buffer
-- `<Space>bp` - Previous buffer
-- `<Space>bd` - Delete buffer
+- `<C-h>`, `<C-j>`, `<C-k>`, `<C-l>`: Navigate between splits
+- `<leader>bn`, `<leader>bp`: Navigate buffers
+- `<leader>bd`: Delete buffer
 
 ### File Operations
 
-- `<Space>w` - Quick save
-- `<Space>q` - Quick quit
-- `<Space>sv` - Source `init.vim` (reload configuration)
-- `<Space>t` - Apply the Markdown template to current file
-- `<Space>n` - Create a new Markdown file with template
+- `<leader>w`: Save file
+- `<leader>q`: Quit
+- `<leader>sv`: Source vimrc
 
 ### Markdown Specific
 
-- All mkdnflow keybindings (see [Markdown Workflow](#markdown-workflow-mkdnflow))
-- Spell checking is automatically enabled for Markdown files
+- `<leader>n`: Create new markdown file
+- `<leader>t`: Apply template to current file
+- `;l`: Insert markdown link `[]()`
+- `;w`: Insert wiki link `[[]]`
+- `<leader>bl`: Search for backlinks
+- `<leader>cl`: Create link
+- `<leader>fl`: Follow link
+- `<leader>dl`: Destroy link
 
 ### Searching
 
-- `<Space>h` - Clear search highlighting
-- Telescope keybindings (see [Telescope](#telescope-fuzzy-finder))
+- `<leader>h`: Clear search highlighting
+- `<leader>ff`: Find files
+- `<leader>fg`: Search in files
+- `<leader>fb`: Search buffers
+- `<leader>fh`: Search help
+- `<leader>fd`: Search in Documents directory
+- `<leader>fD`: Search content in Documents directory
+
+## Performance Optimizations
+
+Several optimizations for better performance, especially on lower-end hardware:
+
+- **Memory Management**: Limited pattern matching memory usage
+- **Lazy Redraw**: Reduces unnecessary screen redraws
+- **Telescope Optimizations**: 
+  - Reduced preview timeouts
+  - Limited concurrent processes
+  - Disabled heavy features when not needed
+- **Syntax Highlighting Limits**: Only highlight up to 200 columns
 
 ## Custom Functions
 
-- **CreateAndEdit** (`CE` command):
-- Creates directories if they don't exist when opening a file
-- Example: `:CE path/that/doesnt/exist/yet/file.md`
-- **NewMarkdownFile** (`:NewMarkdown` command):
-- Interactive prompt for creating new Markdown files with the template
-- Automatically adds .md extension if omitted
-- Creates any necessary directories in the path
-- Prompts for tags with comma-separated input
-- Applies the skeleton.md template automatically
-- **FormatTags**:
-- Internal function that formats comma-separated tags with double brackets
-- Example: `life, stoicism` → `[[life]], [[stoicism]]`
-- **Document Search**:
-- Custom functions for searching specifically in your Documents folder
-- Accessed via `<Space>fd` for files and `<Space>fD` for text content
+The configuration includes several custom functions:
+
+- **CreateAndEdit**: Create directories and edit files in one command
+- **NewMarkdownFile**: Create a new markdown file with template
+- **UpdateBacklinksSection**: Update the backlinks section in the current file
+- **SearchInDocuments/GrepInDocuments**: Search specifically in Documents directory
 
 ## Customization
 
-To customize this configuration:
+You can customize this configuration by:
 
-1. **Add new plugins**: Insert new `Plug` lines between the `plug#begin()` and `plug#end()` calls.
-2. **Modify key bindings**: Add or change mappings in the "Key mappings" section.
-3. **Add templates**: Create new files in the `~/.config/nvim/templates/` directory.
-4. **Change template behavior**: Modify the `ApplyTemplate` function in `init.vim` to change how templates are applied or to add new template variables.
-5. **Customize tag formatting**: Modify the `FormatTags` function to change how tags are formatted.
-6. **Add file-specific settings**: Create new `autocmd` groups in the "Auto commands" section for different file types.
-
-## Troubleshooting
-
-- If plugins aren't working, try running `:PlugInstall` and restart Neovim.
-- If templates aren't applying, check that the templates directory exists at `~/.config/nvim/templates/`.
-- For Telescope issues with searching text, ensure `ripgrep` is installed on your system.
-- If tag prompts appear twice when creating a file, ensure your init.vim contains the fix for preventing duplicate template application.
+1. Editing the `init.vim` file directly
+2. Adding your own templates to the templates directory
+3. Adjusting plugin settings in the Lua blocks
+4. Adding or removing plugins in the vim-plug section
