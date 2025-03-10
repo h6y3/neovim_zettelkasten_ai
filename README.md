@@ -34,6 +34,7 @@ git clone https://github.com/yourusername/nvim-config.git ~/.config/nvim
  ```
 
  or manually copy the files to `~/.config/nvim/`.
+
 3. Launch Neovim. Vim-plug will automatically install and plugins will be installed.
 
  ```bash
