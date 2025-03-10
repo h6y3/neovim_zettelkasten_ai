@@ -57,6 +57,9 @@ set updatetime=300         " Faster update time
 set timeoutlen=500         " Faster key sequence completion
 set completeopt=menuone,noselect  " Better completion
 
+" Global variables
+let g:markdown_template_applied = 0  " Flag to prevent double template application
+
 " ========================================================================
 " Plugin Configurations
 " ========================================================================
@@ -139,6 +142,40 @@ nnoremap <leader>bp :bprevious<CR>
 nnoremap <leader>bd :bdelete<CR>
 
 " ========================================================================
+" Tag Processing Functions
+" ========================================================================
+
+" Function to format tags with double brackets
+function! FormatTags(tags_string)
+    " Trim the input string
+    let trimmed = trim(a:tags_string)
+    if empty(trimmed)
+        return '[[]]'
+    endif
+    
+    " Split by comma and trim each tag
+    let tags = split(trimmed, ',')
+    let formatted_tags = []
+    
+    " Format each tag with double brackets
+    for tag in tags
+        let trimmed_tag = trim(tag)
+        if !empty(trimmed_tag)
+            call add(formatted_tags, '[[' . trimmed_tag . ']]')
+        endif
+    endfor
+    
+    " Join with commas
+    return join(formatted_tags, ', ')
+endfunction
+
+" Function to prompt for tags
+function! PromptForTags()
+    let tags_input = input('Tags (separated by comma): ')
+    return FormatTags(tags_input)
+endfunction
+
+" ========================================================================
 " Template System
 " ========================================================================
 
@@ -155,9 +192,13 @@ function! ApplyTemplate(template, ...)
         " Get the title - either from the argument or the filename
         let title = a:0 > 0 ? a:1 : expand('%:t:r')
         
+        " Prompt for tags
+        let formatted_tags = PromptForTags()
+        
         " Expand common variables
         silent! %s/{{date}}/\=strftime('%Y-%m-%d')/ge
         silent! %s/{{title}}/\=title/ge
+        silent! %s/{{tags}}/\=formatted_tags/ge
         
         " Position cursor at the end of the file and enter insert mode
         normal! G
@@ -190,11 +231,18 @@ augroup markdown
     autocmd FileType markdown setlocal spell textwidth=80
 augroup END
 
+" Only apply template for new markdown files when NOT created through NewMarkdownFile
+augroup markdown_templates
+    autocmd!
+    " Only apply template if not already handled by NewMarkdownFile
+    autocmd BufNewFile *.md if g:markdown_template_applied == 0 | call ApplyTemplate('skeleton.md') | endif
+augroup END
+
 " ========================================================================
 " Custom Functions
 " ========================================================================
 
-" Create directory if it doesn't exist
+" Create directory if it doesn't exist and edit the file
 function! CreateAndEdit(file)
     let l:dir = fnamemodify(a:file, ':h')
     if !isdirectory(l:dir)
@@ -222,11 +270,18 @@ function! NewMarkdownFile()
     " Create sanitized filename
     let filename = SanitizeFilename(original_title) . '.md'
     
+    " Set the global flag to prevent autocommand from applying template
+    let g:markdown_template_applied = 1
+    
     " Create and edit the file
     call CreateAndEdit(filename)
     
     " Apply template with original title, not the filename
     call ApplyTemplate('skeleton.md', original_title)
+    
+    " Reset the flag for future file creations
+    " We use timer_start to ensure this happens after all autocommands complete
+    call timer_start(100, {-> execute('let g:markdown_template_applied = 0', '')})
 endfunction
 
 command! NewMarkdown call NewMarkdownFile()
