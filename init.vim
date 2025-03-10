@@ -1,4 +1,3 @@
-"""
 " ========================================================================
 " Neovim Configuration
 " ========================================================================
@@ -68,25 +67,18 @@ let g:template_dir = expand('~/.config/nvim/templates')
 " mkdnflow configuration
 lua << EOF
 require('mkdnflow').setup({
-    -- Default configuration
     links = {
         conceal = true,
         transform_explicit = false,
     },
     mappings = {
         MkdnEnter = {{'n', 'v'}, '<CR>'},
-        MkdnTab = false,
-        MkdnSTab = false,
         MkdnNextLink = {'n', '<Tab>'},
         MkdnPrevLink = {'n', '<S-Tab>'},
         MkdnNextHeading = {'n', ']]'},
         MkdnPrevHeading = {'n', '[['},
         MkdnGoBack = {'n', '<BS>'},
         MkdnGoForward = {'n', '<Del>'},
-        MkdnCreateLink = false,
-        MkdnCreateLinkFromClipboard = false,
-        MkdnFollowLink = false,
-        MkdnDestroyLink = false,
         MkdnCreateNewFile = {'n', '<leader>nf'},
     }
 })
@@ -151,7 +143,7 @@ nnoremap <leader>bd :bdelete<CR>
 " ========================================================================
 
 " Universal template function
-function! ApplyTemplate(template)
+function! ApplyTemplate(template, ...)
     let template_path = g:template_dir . '/' . a:template
     if filereadable(template_path)
         " Make sure we're at the start of the file
@@ -160,13 +152,14 @@ function! ApplyTemplate(template)
         " Read template file at the top of the buffer
         execute '0read ' . template_path
         
+        " Get the title - either from the argument or the filename
+        let title = a:0 > 0 ? a:1 : expand('%:t:r')
+        
         " Expand common variables
         silent! %s/{{date}}/\=strftime('%Y-%m-%d')/ge
-        silent! %s/{{title}}/\=expand('%:t:r')/ge
+        silent! %s/{{title}}/\=title/ge
         
-        " Position cursor behavior options based on user preference
-        
-        " Option 1: Go to the end of the file and enter insert mode
+        " Position cursor at the end of the file and enter insert mode
         normal! G
         startinsert
         
@@ -184,12 +177,6 @@ command! MDTemplate call ApplyTemplate('skeleton.md')
 " ========================================================================
 " Auto commands
 " ========================================================================
-
-" Auto-apply templates for new files
-augroup templates
-    autocmd!
-    autocmd BufNewFile *.md call ApplyTemplate('skeleton.md')
-augroup END
 
 " Remember last cursor position
 augroup remember_position
@@ -218,24 +205,28 @@ endfunction
 
 command! -nargs=1 -complete=file CE call CreateAndEdit(<f-args>)
 
+" Sanitize title to create a suitable filename
+function! SanitizeFilename(title)
+    let sanitized = substitute(a:title, '[^a-zA-Z0-9]', '_', 'g')  " Replace non-alphanumeric characters with underscores
+    return tolower(sanitized)  " Convert to lowercase
+endfunction
+
 " Create new Markdown file with template
 function! NewMarkdownFile()
-    let filename = input('New Markdown file: ', '', 'file')
-    if empty(filename)
+    let original_title = input('New Markdown file title: ')  " Prompt for title
+    if empty(original_title)
         echo "Cancelled"
         return
     endif
     
-    " Add .md extension if not present
-    if filename !~ '\.md$'
-        let filename .= '.md'
-    endif
+    " Create sanitized filename
+    let filename = SanitizeFilename(original_title) . '.md'
     
     " Create and edit the file
     call CreateAndEdit(filename)
     
-    " Apply template
-    call ApplyTemplate('skeleton.md')
+    " Apply template with original title, not the filename
+    call ApplyTemplate('skeleton.md', original_title)
 endfunction
 
 command! NewMarkdown call NewMarkdownFile()
@@ -252,4 +243,3 @@ endfunction
 
 command! DocFiles call SearchInDocuments()
 command! DocGrep call GrepInDocuments()
-"""
