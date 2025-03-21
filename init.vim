@@ -403,9 +403,17 @@ function! ApplyTemplate(template, ...)
         " Add a backlinks section at the end of the file
         call append(line('$'), ['', '## Backlinks', ''])
         
-        " Position cursor at the end of the file and enter insert mode
-        normal! G
-        startinsert
+        " Position cursor at the cursor marker if it exists, otherwise at the end of file
+        if search('{{cursor}}', 'w')
+            " Replace the marker with an empty string
+            execute 's/{{cursor}}//e'
+            " Enter insert mode
+            startinsert
+        else
+            " Position cursor at the end of the file and enter insert mode
+            normal! G
+            startinsert
+        endif
         
         " Mark as modified to ensure save works properly
         set modified

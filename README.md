@@ -189,7 +189,8 @@ Several plugins to enhance text editing capabilities:
 A flexible templating system for creating new markdown files:
 
 - **Predefined Templates**: Store templates in `~/.config/nvim/templates/`
-- **Variables**: Use `{{date}}`, `{{title}}`, and `{{tags}}` in templates
+- **Variables**: Use `{{date}}`, `{{title}}`, `{{tags}}`, and `{{cursor}}` in templates
+- **Cursor Positioning**: Precisely control where the cursor appears after template insertion
 - **Tag System**: Easily add formatted tags to new files
 - **Backlinks Section**: Templates now include a backlinks section
 - **Path Creation**: Automatically creates directories if they don't exist
@@ -205,10 +206,13 @@ Date: {{date}}
 Tags: {{tags}}
 
 ## Content
+{{cursor}}
 
 ## Backlinks
 
 ```
+
+The `{{cursor}}` marker will be replaced with an empty string, and the cursor will be positioned exactly at that location in insert mode after applying the template.
 
 ### Using Templates
 
@@ -222,6 +226,7 @@ Tags: {{tags}}
 - `{{date}}`: Current date (formatted as YYYY-MM-DD)
 - `{{title}}`: Title from filename or specified during creation
 - `{{tags}}`: Tags specified during template application
+- `{{cursor}}`: Specifies where the cursor should be positioned after applying the template
 
 ## Tag System
 
@@ -316,6 +321,7 @@ Created: {{date}}
 Tags: {{tags}}
 
 ## Summary
+{{cursor}}
 
 ## Details
 
@@ -325,7 +331,7 @@ Tags: {{tags}}
 ' > ~/.config/nvim/templates/note.md
 ```
 
-Then use it with `:Template note.md`
+Then use it with `:Template note.md`. The cursor will be automatically positioned after "## Summary" in insert mode.
 
 ## Troubleshooting
 
