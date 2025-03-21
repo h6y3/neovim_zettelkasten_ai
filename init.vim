@@ -80,7 +80,7 @@ require('mkdnflow').setup({
             -- Convert spaces to dashes and lowercase for filenames
             return text:gsub(' ', '-'):lower()
         end,
-        context_aware_execution = true,
+        context = 2,  -- Added context to handle multi-line links
         -- Recognize more link types
         recognize = {
             file = true,
@@ -437,14 +437,10 @@ augroup markdown_templates
     autocmd BufNewFile *.md if g:markdown_template_applied == 0 | call ApplyTemplate('skeleton.md') | endif
 augroup END
 
-" Autocommands for backlinks
-augroup backlinks
+" Ensure files are saved when navigating away
+augroup autosave
     autocmd!
-    " Update backlinks section on save
-    autocmd BufWritePre *.md lua require('mkdnflow').update_links()
-    
-    " Check for broken links when opening markdown files
-    autocmd BufReadPost *.md lua vim.defer_fn(function() require('mkdnflow').update_links() end, 500)
+    autocmd FileType markdown setlocal autowriteall
 augroup END
 " ========================================================================
 " Custom Functions
@@ -498,38 +494,3 @@ function! GrepInDocuments()
 endfunction
 command! DocFiles call SearchInDocuments()
 command! DocGrep call GrepInDocuments()
-
-" Update backlinks section in current file
-function! UpdateBacklinksSection()
-    " Save current position
-    let save_pos = getpos(".")
-    
-    " Find or create the backlinks section
-    if search('^## Backlinks', 'w') == 0
-        " If not found, add it at the end
-        call append(line('$'), ['', '## Backlinks', ''])
-        call cursor(line('$'), 1)
-    else
-        " If found, clear existing content
-        let start_line = line('.')
-        let end_line = search('^##', 'n') - 1
-        if end_line <= start_line
-            let end_line = line('$')
-        endif
-        
-        " Delete everything between the backlinks heading and the next heading
-        if end_line > start_line
-            execute (start_line + 1) . ',' . end_line . 'delete'
-        endif
-        
-        " Add an empty line after the heading
-        call append(start_line, '')
-    endif
-    
-    " Restore cursor position
-    call setpos('.', save_pos)
-endfunction
-command! UpdateBacklinks call UpdateBacklinksSection()
-
-" Add a command to manually update all links in the current file
-command! UpdateLinks lua require('mkdnflow').update_links()

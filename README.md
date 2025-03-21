@@ -26,10 +26,11 @@ A clean, efficient Neovim setup focused on Markdown editing and templating, feat
 - [Performance Optimizations](#performance-optimizations)
 - [Custom Functions](#custom-functions)
 - [Customization](#customization)
+- [Troubleshooting](#troubleshooting)
 
 ## Installation
 
-1. Ensure you have Neovim installed (version 0.5.0 or later recommended).
+1. Ensure you have Neovim installed (version 0.7.0 or later recommended for full mkdnflow functionality).
 2. Clone this repository or copy the files to your Neovim configuration directory:
 
 ```bash
@@ -38,13 +39,21 @@ git clone https://github.com/yourusername/nvim-config.git ~/.config/nvim
 
 or manually copy the files to `~/.config/nvim/`.
 
-3. Launch Neovim. Vim-plug will automatically install and plugins will be installed.
+3. Create a templates directory:
+
+```bash
+mkdir -p ~/.config/nvim/templates
+```
+
+4. Add at least a basic skeleton.md template to the templates directory.
+
+5. Launch Neovim. Vim-plug will automatically install and plugins will be installed:
 
 ```bash
 nvim
 ```
 
-4. Inside Neovim, install all plugins:
+6. Inside Neovim, install all plugins:
 
 ```
 :PlugInstall
@@ -55,7 +64,7 @@ nvim
 This configuration includes the following plugins:
 
 - **seoul256.vim**: A low-contrast color scheme for Vim
-- **mkdnflow.nvim**: Markdown workflow enhancement
+- **mkdnflow.nvim**: Markdown workflow enhancement (using the development branch for latest features)
 - **nvim-cmp**: Autocompletion framework with custom markdown link source
 - **LuaSnip**: Snippet engine for autocompletion
 - **NERDTree**: File explorer
@@ -63,6 +72,16 @@ This configuration includes the following plugins:
 - **vim-surround**: Text surrounding operations
 - **auto-pairs**: Auto-close brackets and quotes
 - **telescope.nvim**: Fuzzy finder for files and text
+- **plenary.nvim**: Lua utilities (required by telescope)
+
+## Seoul256 Color Scheme
+
+The configuration uses the Seoul256 color scheme, a low-contrast Vim color scheme that works well for extended editing sessions. The dark mode is enabled by default:
+
+```vim
+set background=dark
+silent! colorscheme seoul256
+```
 
 ## Markdown Workflow (mkdnflow)
 
@@ -71,8 +90,10 @@ The configuration integrates [mkdnflow.nvim](https://github.com/jakewvincent/mkd
 - **Link Navigation**: Quickly move between and follow links
 - **Link Transformation**: Convert spaces to dashes and lowercase for filenames
 - **Link Concealing**: Hide markdown syntax for cleaner reading
+- **Multi-line Links**: Support for links that span multiple lines with context=2 setting
 - **Heading Navigation**: Jump between headings with `[[` and `]]`
 - **File Creation**: Create new markdown files from links
+- **Wiki-style Links**: Support for `[[WikiLinks]]` format in addition to standard Markdown links
 
 ### Key mappings:
 
@@ -94,27 +115,29 @@ The configuration includes a custom completion system for markdown links:
 - **Auto-suggestion**: Shows existing markdown files when typing `[[` or `[](` 
 - **Snippet Support**: Use Tab to navigate through link placeholders
 - **Smart Completion**: Context-aware completion that only activates in markdown files
+- **Path Intelligence**: Shows both file names and relative paths in completion menu
 
 ### Key mappings and shortcuts:
 
 - `;l`: Insert a standard markdown link `[]()`
 - `;w`: Insert a wiki-style link `[[]]`
 - `<C-Space>`: Trigger completion manually
+- `<C-n>`, `<C-p>`: Navigate through completion menu
+- `<Tab>`, `<S-Tab>`: Navigate through snippet placeholders
 - When typing `[[` or `[](`, completion menu appears automatically
 
 ## Backlinks System
 
-A powerful backlink system to track references between markdown files:
+A dynamic backlink system to find references between markdown files:
 
-- **Backlink Search**: Find all references to the current file
-- **Automatic Sections**: Templates include a backlinks section
-- **Link Maintenance**: Automatically update links on file save
+- **Backlink Search**: Find all references to the current file using Telescope
+- **Template Integration**: Templates include a backlinks section
+- **Automatic File Saving**: Files are automatically saved when navigating between them
 
 ### Key mappings:
 
 - `<leader>bl`: Search for all references to the current file
-- `:UpdateLinks`: Manually update all links in the current file
-- `:UpdateBacklinks`: Update the backlinks section in the current file
+- `:set autowriteall`: Automatically enabled for markdown files to ensure changes are saved when navigating
 
 ## NERDTree (File Explorer)
 
@@ -138,6 +161,7 @@ Integrated Telescope for powerful fuzzy finding:
 - **Help Documentation**: Search available help topics
 - **Document Search**: Search specifically within Documents directory
 - **Backlink Search**: Search for references to current file
+- **Performance Optimizations**: Configured for better performance on lower-end hardware
 
 ### Key mappings:
 
@@ -155,6 +179,9 @@ Several plugins to enhance text editing capabilities:
 
 - **vim-commentary**: Comment code with `gcc` (line) or `gc` (visual selection)
 - **vim-surround**: Manipulate surrounding characters (parentheses, quotes, tags)
+  - `cs"'`: Change surrounding quotes from " to '
+  - `ds"`: Delete surrounding quotes
+  - `ysiw]`: Surround word with brackets
 - **auto-pairs**: Automatically insert closing brackets, quotes, etc.
 
 ## Templating System
@@ -165,6 +192,7 @@ A flexible templating system for creating new markdown files:
 - **Variables**: Use `{{date}}`, `{{title}}`, and `{{tags}}` in templates
 - **Tag System**: Easily add formatted tags to new files
 - **Backlinks Section**: Templates now include a backlinks section
+- **Path Creation**: Automatically creates directories if they don't exist
 
 ### Creating Templates
 
@@ -187,6 +215,7 @@ Tags: {{tags}}
 - `<leader>t`: Apply the default template
 - `<leader>n`: Create a new markdown file with template
 - `:Template filename.md`: Apply a specific template
+- `:MDTemplate`: Apply skeleton.md template to current file
 
 ### Template Variables
 
@@ -200,13 +229,14 @@ The configuration includes a tagging system for markdown files:
 
 - **Tag Formatting**: Tags are automatically formatted as `[[tag]]`
 - **Tag Input**: Enter tags separated by commas when creating a file
+- **Tag Prompt**: Automatically prompted to enter tags when using templates
 
 ## Key Mappings
 
 ### General Navigation
 
 - `<C-h>`, `<C-j>`, `<C-k>`, `<C-l>`: Navigate between splits
-- `<leader>bn`, `<leader>bp`: Navigate buffers
+- `<leader>bn`, `<leader>bp`: Navigate buffers (next/previous)
 - `<leader>bd`: Delete buffer
 
 ### File Operations
@@ -225,6 +255,8 @@ The configuration includes a tagging system for markdown files:
 - `<leader>cl`: Create link
 - `<leader>fl`: Follow link
 - `<leader>dl`: Destroy link
+- `]]`: Jump to next heading
+- `[[`: Jump to previous heading
 
 ### Searching
 
@@ -240,22 +272,29 @@ The configuration includes a tagging system for markdown files:
 
 Several optimizations for better performance, especially on lower-end hardware:
 
-- **Memory Management**: Limited pattern matching memory usage
-- **Lazy Redraw**: Reduces unnecessary screen redraws
+- **Memory Management**: Limited pattern matching memory usage with `set maxmempattern=2000`
+- **Lazy Redraw**: Reduces unnecessary screen redraws with `set lazyredraw`
 - **Telescope Optimizations**: 
-  - Reduced preview timeouts
-  - Limited concurrent processes
-  - Disabled heavy features when not needed
-- **Syntax Highlighting Limits**: Only highlight up to 200 columns
+  - Reduced preview timeouts (200ms)
+  - Limited concurrent processes (single process for cache)
+  - Disabled treesitter for preview
+  - Optimized layout configurations
+- **Syntax Highlighting Limits**: Only highlight up to 200 columns with `set synmaxcol=200`
+- **Conceallevel**: Set to 2 for markdown files to hide syntax for cleaner viewing
 
 ## Custom Functions
 
 The configuration includes several custom functions:
 
 - **CreateAndEdit**: Create directories and edit files in one command
+  - Usage: `:CE path/to/new/file.md`
 - **NewMarkdownFile**: Create a new markdown file with template
-- **UpdateBacklinksSection**: Update the backlinks section in the current file
+  - Usage: `:NewMarkdown` or `<leader>n`
 - **SearchInDocuments/GrepInDocuments**: Search specifically in Documents directory
+  - Usage: `:DocFiles` or `<leader>fd` (files)
+  - Usage: `:DocGrep` or `<leader>fD` (content)
+- **find_backlinks**: Find all references to current file using Telescope
+  - Usage: `<leader>bl`
 
 ## Customization
 
@@ -265,3 +304,57 @@ You can customize this configuration by:
 2. Adding your own templates to the templates directory
 3. Adjusting plugin settings in the Lua blocks
 4. Adding or removing plugins in the vim-plug section
+
+### Example: Adding a Custom Template
+
+Create a new template in `~/.config/nvim/templates/`:
+
+```bash
+echo '# {{title}}
+
+Created: {{date}}
+Tags: {{tags}}
+
+## Summary
+
+## Details
+
+## Related
+
+## Backlinks
+' > ~/.config/nvim/templates/note.md
+```
+
+Then use it with `:Template note.md`
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Error with mkdnflow functions**: If you see errors related to mkdnflow functions not being found, make sure you're using the latest version of the plugin and have specified the `dev` branch:
+
+```vim
+Plug 'jakewvincent/mkdnflow.nvim', { 'branch': 'dev' }
+```
+
+2. **Autowriting not working**: If files aren't saving automatically when navigating, check that `autowriteall` is set for markdown files:
+
+```vim
+" Add this to your configuration if needed
+autocmd FileType markdown setlocal autowriteall
+```
+
+3. **Template directory not found**: If templates aren't working, ensure your template directory exists:
+
+```bash
+mkdir -p ~/.config/nvim/templates
+```
+
+4. **Links not working**: If link following isn't working, check that you have context set properly in the mkdnflow configuration:
+
+```lua
+links = {
+    context = 2,  -- Needed for multi-line links
+    -- other settings...
+}
+```
