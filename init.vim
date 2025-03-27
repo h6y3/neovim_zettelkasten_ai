@@ -71,6 +71,10 @@ let g:markdown_template_applied = 0  " Flag to prevent double template applicati
 " Template directory configuration
 let g:template_dir = expand('~/.config/nvim/templates')
 " mkdnflow configuration
+
+" Press Alt+] to move past the closing ]]
+autocmd FileType markdown inoremap <M-]> <Esc>f]f]a
+
 lua << EOF
 require('mkdnflow').setup({
     links = {
@@ -128,38 +132,118 @@ require('mkdnflow').setup({
     }
 })
 
--- Telescope configuration with backlink support
+-- Function to define throttled live grep (to improve performance)
+function _G.throttled_live_grep()
+  -- Get current visual selection for prefiltering
+  local visual_selection = ""
+  if vim.fn.mode() == 'v' or vim.fn.mode() == 'V' then
+    local saved_reg = vim.fn.getreg('"')
+    vim.cmd('noau normal! "vy"')
+    visual_selection = vim.fn.getreg('"')
+    vim.fn.setreg('"', saved_reg)
+  end
+  
+  require('telescope.builtin').live_grep({
+    default_text = visual_selection,
+    prompt_title = "Live Grep (Optimized)",
+  })
+end
+
+-- Telescope configuration with performance optimizations
 require('telescope').setup {
   defaults = {
     prompt_prefix = "❯ ",
     selection_caret = "❯ ",
     path_display = { "truncate" },
-    file_ignore_patterns = { ".git/", "node_modules/", "target/", "docs/", ".settings/" },
+    
+    -- Improved file ignoring patterns
+    file_ignore_patterns = { 
+      ".git/", "node_modules/", "target/", "docs/", ".settings/",
+      "%.png", "%.jpg", "%.jpeg", "%.pdf", "%.zip", "%.tar.gz",
+    },
+    
+    -- Improved ripgrep arguments for better performance
     vimgrep_arguments = {
-        'rg', '--color=never', '--no-heading',
-        '--with-filename', '--line-number',
-        '--smart-case', '-L', '--trim'
+      'rg',
+      '--color=never',
+      '--no-heading',
+      '--with-filename',
+      '--line-number',
+      '--column',
+      '--smart-case',
+      '--hidden',
+      '--glob=!.git/*',
+      '--max-columns=150',         -- Limit line length
+      '--max-columns-preview',
+      '--trim',                    -- Trim whitespace
     },
+    
+    -- Set smaller timeouts
     cache_picker = {
-        num_processes = 1         -- Optimize for lower-end hardware
+      num_processes = 1,           -- Limit to one process
     },
+    
+    -- More aggressive preview optimizations
     preview = {
-        timeout = 200,            -- Lower timeout for better performance
-        treesitter = false        -- Disable treesitter for preview (performance)
-    }
+      timeout = 100,               -- Lower timeout for better performance
+      treesitter = false,          -- Disable treesitter for preview
+      filesize_limit = 1,          -- Limit previewed file size to 1MB
+    },
+    
+    -- Throttle input for better performance
+    set_env = { ['COLORTERM'] = 'truecolor' },
+    
+    -- Better layout performance
+    layout_strategy = 'vertical',  -- Use vertical layout (often faster)
+    layout_config = {
+      vertical = {
+        preview_cutoff = 40,       -- Don't show preview on small screens
+        preview_height = 0.4,      -- Smaller preview size
+      },
+      height = 0.85,               -- Use less screen space
+      width = 0.75,
+    },
+    
+    buffer_previewer_maker = function(filepath, bufnr, opts)
+      -- Skip preview for large files
+      local previewers = require("telescope.previewers")
+      local filesize = vim.fn.getfsize(filepath)
+      
+      if filesize > 100000 then
+        -- Skip preview for files larger than 100KB
+        return previewers.buffer_previewer_maker(filepath, bufnr, {
+          bufname = "LARGE FILE",
+          winblend = 0,
+          preview_cutoff = 0,
+          get_buffer_by_name = false
+        })
+      else
+        previewers.buffer_previewer_maker(filepath, bufnr, opts)
+      end
+    end,
   },
+  
   pickers = {
-    find_files = { theme = "dropdown" },
-    live_grep = {
-      additional_args = function() return { "--hidden" } end,
+    find_files = { 
       theme = "dropdown",
+      previewer = false,           -- Disable previewer for find_files
+    },
+    live_grep = {
+      theme = "dropdown",
+      only_sort_text = true,       -- Sort only by matched text (faster)
+      disable_coordinates = true,  -- Don't show coordinates (faster)
+    },
+    buffers = {
+      theme = "dropdown",
+      previewer = false,           -- Disable previewer for buffers
+      sort_lastused = true,
     },
     backlinks = {
-        theme = "dropdown",
-        layout_config = {
-            width = 0.6,
-            height = 0.6,
-        }
+      theme = "dropdown",
+      layout_config = {
+        width = 0.6,
+        height = 0.6,
+      }
     }
   },
 }
@@ -320,13 +404,13 @@ nnoremap <C-l> <C-w>l
 " NERDTree
 nnoremap <leader>e :NERDTreeToggle<CR>
 nnoremap <leader>f :NERDTreeFind<CR>
-" Telescope
-nnoremap <leader>ff <cmd>Telescope find_files<cr>
-nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-nnoremap <leader>fb <cmd>Telescope buffers<cr>
+" Telescope with optimized settings
+nnoremap <leader>ff <cmd>Telescope find_files previewer=false<cr>
+nnoremap <leader>fg <cmd>lua _G.throttled_live_grep()<cr>
+nnoremap <leader>fb <cmd>Telescope buffers previewer=false<cr>
 nnoremap <leader>fh <cmd>Telescope help_tags<cr>
-nnoremap <leader>fd <cmd>DocFiles<cr>
-nnoremap <leader>fD <cmd>DocGrep<cr>
+nnoremap <leader>fd <cmd>lua require('telescope.builtin').find_files({ previewer = false, cwd = vim.fn.expand('~/Documents') })<cr>
+nnoremap <leader>fD <cmd>lua require('telescope.builtin').live_grep({ cwd = vim.fn.expand('~/Documents') })<cr>
 " Quick commands
 nnoremap <leader>h :nohlsearch<CR>        " Clear search highlighting
 nnoremap <leader>w :w<CR>                 " Quick save

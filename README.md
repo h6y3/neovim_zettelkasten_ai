@@ -31,7 +31,18 @@ A clean, efficient Neovim setup focused on Markdown editing and templating, feat
 ## Installation
 
 1. Ensure you have Neovim installed (version 0.7.0 or later recommended for full mkdnflow functionality).
-2. Clone this repository or copy the files to your Neovim configuration directory:
+2. Install ripgrep for optimal Telescope performance:
+   ```bash
+   # For Ubuntu/Debian
+   sudo apt install ripgrep
+   
+   # For macOS
+   brew install ripgrep
+   
+   # For Windows (with Chocolatey)
+   choco install ripgrep
+   ```
+3. Clone this repository or copy the files to your Neovim configuration directory:
 
 ```bash
 git clone https://github.com/yourusername/nvim-config.git ~/.config/nvim
@@ -39,21 +50,21 @@ git clone https://github.com/yourusername/nvim-config.git ~/.config/nvim
 
 or manually copy the files to `~/.config/nvim/`.
 
-3. Create a templates directory:
+4. Create a templates directory:
 
 ```bash
 mkdir -p ~/.config/nvim/templates
 ```
 
-4. Add at least a basic skeleton.md template to the templates directory.
+5. Add at least a basic skeleton.md template to the templates directory.
 
-5. Launch Neovim. Vim-plug will automatically install and plugins will be installed:
+6. Launch Neovim. Vim-plug will automatically install and plugins will be installed:
 
 ```bash
 nvim
 ```
 
-6. Inside Neovim, install all plugins:
+7. Inside Neovim, install all plugins:
 
 ```
 :PlugInstall
@@ -153,25 +164,33 @@ The configuration includes NERDTree for file exploration:
 
 ## Telescope (Fuzzy Finder)
 
-Integrated Telescope for powerful fuzzy finding:
+Integrated Telescope for powerful fuzzy finding, with performance optimizations for better responsiveness:
 
-- **File Finding**: Search for files by name
-- **Content Search**: Search for patterns within files
-- **Buffer Management**: Search open buffers
+- **File Finding**: Fast file search without preview
+- **Content Search**: Optimized live grep with throttling
+- **Buffer Management**: Quick buffer switching without preview
 - **Help Documentation**: Search available help topics
-- **Document Search**: Search specifically within Documents directory
-- **Backlink Search**: Search for references to current file
-- **Performance Optimizations**: Configured for better performance on lower-end hardware
+- **Document Search**: Performance-optimized search in Documents directory
+- **Backlink Search**: Optimized search for references to current file
 
 ### Key mappings:
 
-- `<leader>ff`: Find files
-- `<leader>fg`: Live grep (search file contents)
-- `<leader>fb`: Search buffers
+- `<leader>ff`: Find files (no preview for speed)
+- `<leader>fg`: Throttled live grep (search file contents)
+- `<leader>fb`: Search buffers (no preview for speed)
 - `<leader>fh`: Search help tags
-- `<leader>fd`: Search files in Documents
-- `<leader>fD`: Search content in Documents
+- `<leader>fd`: Search files in Documents (no preview)
+- `<leader>fD`: Search content in Documents with optimized settings
 - `<leader>bl`: Search for backlinks to current file
+
+### Performance Features:
+
+- **No Preview Mode**: Faster file finding without previews
+- **Throttled Searching**: Better responsiveness during typing
+- **File Ignoring**: Skip binaries, images, and large files automatically
+- **Ripgrep Optimizations**: Limit line length, follow symbolic links
+- **Large File Protection**: Skip preview for files over 100KB
+- **Debounced Updates**: Reduced UI freezing during search
 
 ## Text Manipulation Plugins
 
@@ -266,12 +285,12 @@ The configuration includes a tagging system for markdown files:
 ### Searching
 
 - `<leader>h`: Clear search highlighting
-- `<leader>ff`: Find files
-- `<leader>fg`: Search in files
-- `<leader>fb`: Search buffers
+- `<leader>ff`: Find files (fast, no preview)
+- `<leader>fg`: Throttled live grep (optimized content search)
+- `<leader>fb`: Search buffers (fast, no preview)
 - `<leader>fh`: Search help
-- `<leader>fd`: Search in Documents directory
-- `<leader>fD`: Search content in Documents directory
+- `<leader>fd`: Search in Documents directory (fast, no preview)
+- `<leader>fD`: Throttled content search in Documents directory
 
 ## Performance Optimizations
 
@@ -280,12 +299,15 @@ Several optimizations for better performance, especially on lower-end hardware:
 - **Memory Management**: Limited pattern matching memory usage with `set maxmempattern=2000`
 - **Lazy Redraw**: Reduces unnecessary screen redraws with `set lazyredraw`
 - **Telescope Optimizations**: 
-  - Reduced preview timeouts (200ms)
-  - Limited concurrent processes (single process for cache)
-  - Disabled treesitter for preview
+  - No previewer for file finding (much faster)
+  - Throttled live grep for responsive searching
+  - File ignoring patterns for binaries and large files
+  - Limited line length for ripgrep (faster searching)
+  - Skipped preview for large files
   - Optimized layout configurations
 - **Syntax Highlighting Limits**: Only highlight up to 200 columns with `set synmaxcol=200`
 - **Conceallevel**: Set to 2 for markdown files to hide syntax for cleaner viewing
+- **Ghost Text Disabled**: Turned off experimental features for better performance
 
 ## Custom Functions
 
@@ -300,6 +322,8 @@ The configuration includes several custom functions:
   - Usage: `:DocGrep` or `<leader>fD` (content)
 - **find_backlinks**: Find all references to current file using Telescope
   - Usage: `<leader>bl`
+- **throttled_live_grep**: Performance-optimized content searching
+  - Usage: `<leader>fg`
 
 ## Customization
 
@@ -364,3 +388,16 @@ links = {
     -- other settings...
 }
 ```
+
+5. **Telescope live grep is slow**: If live grep is still slow, make sure you have ripgrep installed:
+
+```bash
+# Check if ripgrep is installed
+which rg
+
+# If not, install it based on your OS
+# For Ubuntu/Debian
+sudo apt install ripgrep
+```
+
+Also check your file ignoring patterns to ensure you're not searching through large binary files or node_modules directories.
