@@ -32,6 +32,7 @@ A clean, efficient Neovim setup focused on Markdown editing and templating, feat
 
 1. Ensure you have Neovim installed (version 0.7.0 or later recommended for full mkdnflow functionality).
 2. Install ripgrep for optimal Telescope performance:
+
    ```bash
    # For Ubuntu/Debian
    sudo apt install ripgrep
@@ -42,6 +43,7 @@ A clean, efficient Neovim setup focused on Markdown editing and templating, feat
    # For Windows (with Chocolatey)
    choco install ripgrep
    ```
+
 3. Clone this repository or copy the files to your Neovim configuration directory:
 
 ```bash
@@ -66,7 +68,7 @@ nvim
 
 7. Inside Neovim, install all plugins:
 
-```
+```vim
 :PlugInstall
 ```
 
@@ -152,15 +154,32 @@ A dynamic backlink system to find references between markdown files:
 
 ## NERDTree (File Explorer)
 
-The configuration includes NERDTree for file exploration:
+The configuration includes NERDTree for file exploration with sorting by modification time:
 
 - **Toggle**: Show/hide file explorer
 - **Find Current File**: Locate the current file in the explorer
+- **Sort by Modified Time**: Files are sorted by last modified time by default (newest first)
+- **Toggle Sort Mode**: Switch between time-based and alphabetical sorting
 
 ### Key mappings:
 
 - `<leader>e`: Toggle NERDTree
 - `<leader>f`: Find current file in NERDTree
+- `<leader>ns`: Toggle between time-based and alphabetical sorting
+
+### Sort by Modified Time:
+
+The configuration includes a custom function to sort files by modification time in NERDTree:
+
+- Files are sorted with newest files at the top
+- Directories always appear before files
+- Toggle between time-based and alphabetical sorting with `<leader>ns`
+- Visual feedback in the command line when toggling sort modes
+
+```vim
+" Set NERDTree to sort by timestamp (newest first)
+let g:NERDTreeSortOrder = ['\/$', '[[-timestamp]]', '*']
+```
 
 ## Telescope (Fuzzy Finder)
 
@@ -324,6 +343,8 @@ The configuration includes several custom functions:
   - Usage: `<leader>bl`
 - **throttled_live_grep**: Performance-optimized content searching
   - Usage: `<leader>fg`
+- **NERDTreeToggleSortMode**: Toggle between time-based and alphabetical sorting in NERDTree
+  - Usage: `<leader>ns`
 
 ## Customization
 
@@ -401,3 +422,5 @@ sudo apt install ripgrep
 ```
 
 Also check your file ignoring patterns to ensure you're not searching through large binary files or node_modules directories.
+
+6. **NERDTree sorting not working**: If NERDTree sorting by modification time isn't working, try refreshing NERDTree with the `R` key while NERDTree is focused, or toggle the sort mode with `<leader>ns` and then back again.

@@ -70,8 +70,34 @@ let g:markdown_template_applied = 0  " Flag to prevent double template applicati
 " ========================================================================
 " Template directory configuration
 let g:template_dir = expand('~/.config/nvim/templates')
-" mkdnflow configuration
 
+" NERDTree Configuration
+" Set NERDTree to sort by timestamp (newest first)
+let g:NERDTreeSortOrder = ['\/$', '[[-timestamp]]', '*']
+
+" Toggle between timestamp and normal sorting
+function! NERDTreeToggleSortMode()
+    if get(g:, 'NERDTreeSortByTime', 1) == 1
+        let g:NERDTreeSortByTime = 0
+        let g:NERDTreeSortOrder = ['\/$', '*']
+        echo "NERDTree: Sorted alphabetically"
+    else
+        let g:NERDTreeSortByTime = 1
+        let g:NERDTreeSortOrder = ['\/$', '[[-timestamp]]', '*']
+        echo "NERDTree: Sorted by modification time (newest first)"
+    endif
+    
+    " Refresh NERDTree to apply new sorting
+    if exists("b:NERDTree")
+        call b:NERDTree.root.refresh()
+        call NERDTreeRender()
+    endif
+endfunction
+
+" Initialize the sort mode flag
+let g:NERDTreeSortByTime = 1
+
+" mkdnflow configuration
 " Press Alt+] to move past the closing ]]
 autocmd FileType markdown inoremap <M-]> <Esc>f]f]a
 
@@ -404,6 +430,8 @@ nnoremap <C-l> <C-w>l
 " NERDTree
 nnoremap <leader>e :NERDTreeToggle<CR>
 nnoremap <leader>f :NERDTreeFind<CR>
+" Toggle NERDTree sort mode
+nnoremap <leader>ns :call NERDTreeToggleSortMode()<CR>
 " Telescope with optimized settings
 nnoremap <leader>ff <cmd>Telescope find_files previewer=false<cr>
 nnoremap <leader>fg <cmd>lua _G.throttled_live_grep()<cr>
