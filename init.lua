@@ -1,4 +1,9 @@
 -- init.lua for Neovim with lazy.nvim
+
+-- Set leader key BEFORE loading plugins (critical!)
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
 -- Bootstrap lazy.nvim if not installed
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -12,10 +17,6 @@ if not vim.loop.fs_stat(lazypath) then
   })
 end
 vim.opt.rtp:prepend(lazypath)
-
--- Set leader key before loading plugins
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
 
 -- Basic options (moved from init.vim)
 vim.opt.number = true
@@ -54,8 +55,6 @@ vim.opt.synmaxcol = 200
 -- Global variables
 vim.g.markdown_template_applied = 0
 vim.g.template_dir = vim.fn.expand('~/.config/nvim/templates')
-vim.g.NERDTreeSortOrder = {[[\/$]], '[[-timestamp]]', '*'}
-vim.g.NERDTreeSortByTime = 1
 
 -- Define the plugins
 require("lazy").setup({
@@ -128,15 +127,14 @@ require("lazy").setup({
     },
   },
   
-  -- NERDTree - File explorer
+  -- NERDTree - File explorer (FIXED)
   {
     "preservim/nerdtree",
-    cmd = {"NERDTreeToggle", "NERDTreeFind"}, -- Lazy load on commands
-    config = function()
-      -- NERDTree configuration
-      vim.keymap.set("n", "<leader>e", ":NERDTreeToggle<CR>", {silent = true})
-      vim.keymap.set("n", "<leader>f", ":NERDTreeFind<CR>", {silent = true})
-      vim.keymap.set("n", "<leader>ns", function()
+    cmd = {"NERDTreeToggle", "NERDTreeFind"}, -- Add command loading
+    keys = {
+      { "<leader>e", ":NERDTreeToggle<CR>", desc = "Toggle NERDTree" },
+      { "<leader>f", ":NERDTreeFind<CR>", desc = "Find in NERDTree" },
+      { "<leader>ns", function()
         if vim.g.NERDTreeSortByTime == 1 then
           vim.g.NERDTreeSortByTime = 0
           vim.g.NERDTreeSortOrder = {[[\/$]], '*'}
@@ -154,7 +152,11 @@ require("lazy").setup({
             call NERDTreeRender()
           endif
         ]])
-      end, {silent = true, desc = "Toggle NERDTree sort mode"})
+      end, desc = "Toggle NERDTree sort mode" },
+    },
+    init = function() -- Changed from config to init
+      vim.g.NERDTreeSortOrder = {[[\/$]], '[[-timestamp]]', '*'}
+      vim.g.NERDTreeSortByTime = 1
     end,
   },
   
@@ -169,52 +171,57 @@ require("lazy").setup({
     dependencies = {
       "nvim-lua/plenary.nvim",
     },
-    cmd = "Telescope", -- Lazy load on command
     keys = {
-      {"<leader>ff", function() require('telescope.builtin').find_files({previewer = false}) end},
-      {"<leader>fg", function() require("telescope.utils").throttle_live_grep() end},
-      {"<leader>fb", function() require('telescope.builtin').buffers({previewer = false}) end},
-      {"<leader>fh", function() require('telescope.builtin').help_tags() end},
-      {"<leader>fd", function() require('telescope.builtin').find_files({previewer = false, cwd = vim.fn.expand("~/Documents")}) end},
-      {"<leader>fD", function() require('telescope.builtin').live_grep({cwd = vim.fn.expand("~/Documents")}) end},
-      {"<leader>bl", function() require("telescope.utils").find_backlinks() end},
+      { "<leader>ff", function() require('telescope.builtin').find_files({previewer = false}) end, desc = "Find files" },
+      { "<leader>fg", function() 
+        local telescope = require('telescope')
+        if not telescope.utils.throttle_live_grep then
+          telescope.utils.throttle_live_grep = function()
+            -- Get current visual selection for prefiltering
+            local visual_selection = ""
+            if vim.fn.mode() == 'v' or vim.fn.mode() == 'V' then
+              local saved_reg = vim.fn.getreg('"')
+              vim.cmd('noau normal! "vy"')
+              visual_selection = vim.fn.getreg('"')
+              vim.fn.setreg('"', saved_reg)
+            end
+            
+            require('telescope.builtin').live_grep({
+              default_text = visual_selection,
+              prompt_title = "Live Grep (Optimized)",
+            })
+          end
+        end
+        telescope.utils.throttle_live_grep()
+      end, desc = "Live grep" },
+      { "<leader>fb", function() require('telescope.builtin').buffers({previewer = false}) end, desc = "Buffers" },
+      { "<leader>fh", function() require('telescope.builtin').help_tags() end, desc = "Help tags" },
+      { "<leader>fd", function() require('telescope.builtin').find_files({previewer = false, cwd = vim.fn.expand("~/Documents")}) end, desc = "Find in Documents" },
+      { "<leader>fD", function() require('telescope.builtin').live_grep({cwd = vim.fn.expand("~/Documents")}) end, desc = "Grep in Documents" },
+      { "<leader>bl", function() 
+        local telescope = require('telescope')
+        if not telescope.utils.find_backlinks then
+          telescope.utils.find_backlinks = function()
+            local current_file = vim.fn.expand('%:t')
+            if current_file == '' then
+              vim.notify("No file open", vim.log.levels.WARN)
+              return
+            end
+            
+            -- Build search pattern to find links to this file
+            local pattern = '%[.-%]%(' .. current_file .. '%)'
+            
+            -- Use telescope live_grep with our pattern
+            require('telescope.builtin').live_grep({
+              default_text = pattern,
+              prompt_title = "Backlinks to " .. current_file,
+            })
+          end
+        end
+        telescope.utils.find_backlinks()
+      end, desc = "Find backlinks" },
     },
     config = function()
-      -- Throttled live grep function for better performance
-      require("telescope.utils").throttle_live_grep = function()
-        -- Get current visual selection for prefiltering
-        local visual_selection = ""
-        if vim.fn.mode() == 'v' or vim.fn.mode() == 'V' then
-          local saved_reg = vim.fn.getreg('"')
-          vim.cmd('noau normal! "vy"')
-          visual_selection = vim.fn.getreg('"')
-          vim.fn.setreg('"', saved_reg)
-        end
-        
-        require('telescope.builtin').live_grep({
-          default_text = visual_selection,
-          prompt_title = "Live Grep (Optimized)",
-        })
-      end
-      
-      -- Function to find backlinks
-      require("telescope.utils").find_backlinks = function()
-        local current_file = vim.fn.expand('%:t')
-        if current_file == '' then
-          vim.notify("No file open", vim.log.levels.WARN)
-          return
-        end
-        
-        -- Build search pattern to find links to this file
-        local pattern = '%[.-%]%(' .. current_file .. '%)'
-        
-        -- Use telescope live_grep with our pattern
-        require('telescope.builtin').live_grep({
-          default_text = pattern,
-          prompt_title = "Backlinks to " .. current_file,
-        })
-      end
-      
       -- Telescope configuration with performance optimizations
       require('telescope').setup {
         defaults = {
@@ -571,6 +578,24 @@ local function new_markdown_file()
   end, 100)
 end
 
+-- Additional keymaps
+-- Better window navigation
+vim.keymap.set("n", "<C-h>", "<C-w>h")
+vim.keymap.set("n", "<C-j>", "<C-w>j")
+vim.keymap.set("n", "<C-k>", "<C-w>k")
+vim.keymap.set("n", "<C-l>", "<C-w>l")
+
+-- Quick commands
+vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", {silent = true}) -- Clear search highlighting
+vim.keymap.set("n", "<leader>w", ":w<CR>", {silent = true})         -- Quick save
+vim.keymap.set("n", "<leader>q", ":q<CR>", {silent = true})         -- Quick quit
+vim.keymap.set("n", "<leader>sv", ":source $MYVIMRC<CR>", {silent = true}) -- Source init.lua
+
+-- Buffer navigation
+vim.keymap.set("n", "<leader>bn", ":bnext<CR>", {silent = true})
+vim.keymap.set("n", "<leader>bp", ":bprevious<CR>", {silent = true})
+vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", {silent = true})
+
 -- Add user commands for templates
 vim.api.nvim_create_user_command("Template", function(opts)
   apply_template(opts.args)
@@ -583,6 +608,10 @@ end, {})
 vim.api.nvim_create_user_command("NewMarkdown", function()
   new_markdown_file()
 end, {})
+
+-- Template application
+vim.keymap.set("n", "<leader>t", ":Template skeleton.md<CR>", {silent = true})
+vim.keymap.set("n", "<leader>n", ":NewMarkdown<CR>", {silent = true})
 
 vim.api.nvim_create_user_command("CE", function(opts)
   create_and_edit(opts.args)
@@ -626,62 +655,46 @@ autocmd("BufNewFile", {
   end,
 })
 
--- Additional keymaps
--- Better window navigation
-vim.keymap.set("n", "<C-h>", "<C-w>h")
-vim.keymap.set("n", "<C-j>", "<C-w>j")
-vim.keymap.set("n", "<C-k>", "<C-w>k")
-vim.keymap.set("n", "<C-l>", "<C-w>l")
-
--- Quick commands
-vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", {silent = true}) -- Clear search highlighting
-vim.keymap.set("n", "<leader>w", ":w<CR>", {silent = true})         -- Quick save
-vim.keymap.set("n", "<leader>q", ":q<CR>", {silent = true})         -- Quick quit
-vim.keymap.set("n", "<leader>sv", ":source $MYVIMRC<CR>", {silent = true}) -- Source init.vim
-
--- Template application
-vim.keymap.set("n", "<leader>t", ":Template skeleton.md<CR>", {silent = true})
-vim.keymap.set("n", "<leader>n", ":NewMarkdown<CR>", {silent = true})
-
--- Buffer navigation
-vim.keymap.set("n", "<leader>bn", ":bnext<CR>", {silent = true})
-vim.keymap.set("n", "<leader>bp", ":bprevious<CR>", {silent = true})
-vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", {silent = true})
-
 -- Load the status filter module
--- Make sure the module is copied to the correct location
--- This line assumes markdown_status_filter.lua is available in the lua directory
 package.path = vim.fn.stdpath('config') .. '/lua/?.lua;' .. package.path
-local status_filter = require('markdown_status_filter')
+local ok, status_filter = pcall(require, 'markdown_status_filter')
+if not ok then
+  vim.notify("Could not load markdown_status_filter module", vim.log.levels.ERROR)
+  status_filter = {
+    filter_by_status = function() print("Status filter not available") end,
+    count_status_types = function() print("Status counter not available") end
+  }
+else
+  -- Status filter commands
+  vim.api.nvim_create_user_command("StatusFilter", function(opts)
+    status_filter.filter_by_status(opts.args)
+  end, {nargs = 1})
 
--- Status filter commands
-vim.api.nvim_create_user_command("StatusFilter", function(opts)
-  status_filter.filter_by_status(opts.args)
-end, {nargs = 1})
+  vim.api.nvim_create_user_command("StatusUnread", function()
+    status_filter.filter_by_status("unread")
+  end, {})
 
-vim.api.nvim_create_user_command("StatusUnread", function()
-  status_filter.filter_by_status("unread")
-end, {})
+  vim.api.nvim_create_user_command("StatusWIP", function()
+    status_filter.filter_by_status("wip")
+  end, {})
 
-vim.api.nvim_create_user_command("StatusWIP", function()
-  status_filter.filter_by_status("wip")
-end, {})
+  vim.api.nvim_create_user_command("StatusComplete", function()
+    status_filter.filter_by_status("complete")
+  end, {})
 
-vim.api.nvim_create_user_command("StatusComplete", function()
-  status_filter.filter_by_status("complete")
-end, {})
+  vim.api.nvim_create_user_command("StatusAll", function()
+    status_filter.filter_by_status("all")
+  end, {})
 
-vim.api.nvim_create_user_command("StatusAll", function()
-  status_filter.filter_by_status("all")
-end, {})
+  vim.api.nvim_create_user_command("StatusCount", function()
+    status_filter.count_status_types()
+  end, {})
 
-vim.api.nvim_create_user_command("StatusCount", function()
-  status_filter.count_status_types()
-end, {})
+  -- Key mappings for status filtering
+  vim.keymap.set("n", "<leader>su", ":StatusUnread<CR>", {silent = true})
+  vim.keymap.set("n", "<leader>sw", ":StatusWIP<CR>", {silent = true})
+  vim.keymap.set("n", "<leader>sc", ":StatusComplete<CR>", {silent = true})
+  vim.keymap.set("n", "<leader>sa", ":StatusAll<CR>", {silent = true})
+  vim.keymap.set("n", "<leader>ss", ":StatusCount<CR>", {silent = true})
+end
 
--- Key mappings for status filtering
-vim.keymap.set("n", "<leader>su", ":StatusUnread<CR>", {silent = true})
-vim.keymap.set("n", "<leader>sw", ":StatusWIP<CR>", {silent = true})
-vim.keymap.set("n", "<leader>sc", ":StatusComplete<CR>", {silent = true})
-vim.keymap.set("n", "<leader>sa", ":StatusAll<CR>", {silent = true})
-vim.keymap.set("n", "<leader>ss", ":StatusCount<CR>", {silent = true})
