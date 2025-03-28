@@ -56,6 +56,45 @@ vim.opt.synmaxcol = 200
 vim.g.markdown_template_applied = 0
 vim.g.template_dir = vim.fn.expand('~/.config/nvim/templates')
 
+-- Define custom telescope utils in global scope so they're available before the plugin loads
+-- FIXED: Create utility functions that will be attached to telescope when loaded
+_G.telescope_custom_utils = {
+  -- Throttled live grep function for better performance
+  throttle_live_grep = function()
+    -- Get current visual selection for prefiltering
+    local visual_selection = ""
+    if vim.fn.mode() == 'v' or vim.fn.mode() == 'V' then
+      local saved_reg = vim.fn.getreg('"')
+      vim.cmd('noau normal! "vy"')
+      visual_selection = vim.fn.getreg('"')
+      vim.fn.setreg('"', saved_reg)
+    end
+    
+    require('telescope.builtin').live_grep({
+      default_text = visual_selection,
+      prompt_title = "Live Grep (Optimized)",
+    })
+  end,
+  
+  -- Function to find backlinks
+  find_backlinks = function()
+    local current_file = vim.fn.expand('%:t')
+    if current_file == '' then
+      vim.notify("No file open", vim.log.levels.WARN)
+      return
+    end
+    
+    -- Build search pattern to find links to this file
+    local pattern = '%[.-%]%(' .. current_file .. '%)'
+    
+    -- Use telescope live_grep with our pattern
+    require('telescope.builtin').live_grep({
+      default_text = pattern,
+      prompt_title = "Backlinks to " .. current_file,
+    })
+  end
+}
+
 -- Define the plugins
 require("lazy").setup({
   -- Color scheme
@@ -127,7 +166,7 @@ require("lazy").setup({
     },
   },
   
-  -- NERDTree - File explorer (FIXED)
+  -- NERDTree - File explorer
   {
     "preservim/nerdtree",
     cmd = {"NERDTreeToggle", "NERDTreeFind"}, -- Add command loading
@@ -165,65 +204,61 @@ require("lazy").setup({
   { "tpope/vim-surround" },    -- Surroundings manipulation
   { "jiangmiao/auto-pairs" },  -- Auto-close pairs
   
-  -- Telescope and dependencies
+  -- Telescope and dependencies (FIXED)
   {
     "nvim-telescope/telescope.nvim",
     dependencies = {
       "nvim-lua/plenary.nvim",
     },
+    cmd = {"Telescope"}, -- Load on direct command too
+    module = "telescope", -- Load when requiring the module
     keys = {
-      { "<leader>ff", function() require('telescope.builtin').find_files({previewer = false}) end, desc = "Find files" },
+      { "<leader>ff", function() 
+        require('telescope.builtin').find_files({previewer = false}) 
+      end, desc = "Find files" },
+      
       { "<leader>fg", function() 
-        local telescope = require('telescope')
-        if not telescope.utils.throttle_live_grep then
-          telescope.utils.throttle_live_grep = function()
-            -- Get current visual selection for prefiltering
-            local visual_selection = ""
-            if vim.fn.mode() == 'v' or vim.fn.mode() == 'V' then
-              local saved_reg = vim.fn.getreg('"')
-              vim.cmd('noau normal! "vy"')
-              visual_selection = vim.fn.getreg('"')
-              vim.fn.setreg('"', saved_reg)
-            end
-            
-            require('telescope.builtin').live_grep({
-              default_text = visual_selection,
-              prompt_title = "Live Grep (Optimized)",
-            })
-          end
-        end
-        telescope.utils.throttle_live_grep()
+        -- Use the utility function defined in global scope
+        _G.telescope_custom_utils.throttle_live_grep()
       end, desc = "Live grep" },
-      { "<leader>fb", function() require('telescope.builtin').buffers({previewer = false}) end, desc = "Buffers" },
-      { "<leader>fh", function() require('telescope.builtin').help_tags() end, desc = "Help tags" },
-      { "<leader>fd", function() require('telescope.builtin').find_files({previewer = false, cwd = vim.fn.expand("~/Documents")}) end, desc = "Find in Documents" },
-      { "<leader>fD", function() require('telescope.builtin').live_grep({cwd = vim.fn.expand("~/Documents")}) end, desc = "Grep in Documents" },
+      
+      { "<leader>fb", function() 
+        require('telescope.builtin').buffers({previewer = false}) 
+      end, desc = "Buffers" },
+      
+      { "<leader>fh", function() 
+        require('telescope.builtin').help_tags() 
+      end, desc = "Help tags" },
+      
+      { "<leader>fd", function() 
+        require('telescope.builtin').find_files({
+          previewer = false, 
+          cwd = vim.fn.expand("~/Documents")
+        }) 
+      end, desc = "Find in Documents" },
+      
+      { "<leader>fD", function() 
+        require('telescope.builtin').live_grep({
+          cwd = vim.fn.expand("~/Documents")
+        }) 
+      end, desc = "Grep in Documents" },
+      
       { "<leader>bl", function() 
-        local telescope = require('telescope')
-        if not telescope.utils.find_backlinks then
-          telescope.utils.find_backlinks = function()
-            local current_file = vim.fn.expand('%:t')
-            if current_file == '' then
-              vim.notify("No file open", vim.log.levels.WARN)
-              return
-            end
-            
-            -- Build search pattern to find links to this file
-            local pattern = '%[.-%]%(' .. current_file .. '%)'
-            
-            -- Use telescope live_grep with our pattern
-            require('telescope.builtin').live_grep({
-              default_text = pattern,
-              prompt_title = "Backlinks to " .. current_file,
-            })
-          end
-        end
-        telescope.utils.find_backlinks()
+        -- Use the utility function defined in global scope
+        _G.telescope_custom_utils.find_backlinks()
       end, desc = "Find backlinks" },
     },
     config = function()
+      -- Attach our custom utils to telescope.utils
+      local telescope = require('telescope')
+      telescope.utils = telescope.utils or {}
+      
+      -- Register our custom functions in telescope.utils
+      telescope.utils.throttle_live_grep = _G.telescope_custom_utils.throttle_live_grep
+      telescope.utils.find_backlinks = _G.telescope_custom_utils.find_backlinks
+      
       -- Telescope configuration with performance optimizations
-      require('telescope').setup {
+      telescope.setup {
         defaults = {
           prompt_prefix = "❯ ",
           selection_caret = "❯ ",
