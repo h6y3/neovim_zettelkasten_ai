@@ -614,3 +614,28 @@ function! GrepInDocuments()
 endfunction
 command! DocFiles call SearchInDocuments()
 command! DocGrep call GrepInDocuments()
+
+" ========================================================================
+" Status Filtering System
+" ========================================================================
+" Setup lua path to find our module
+lua << EOF
+-- Add the module to package.path if not already there
+package.path = vim.fn.stdpath('config') .. '/lua/?.lua;' .. package.path
+status_filter = require('markdown_status_filter')
+EOF
+
+" Commands for status filtering
+command! -nargs=1 StatusFilter lua status_filter.filter_by_status(<f-args>)
+command! StatusUnread lua status_filter.filter_by_status("unread")
+command! StatusWIP lua status_filter.filter_by_status("wip")
+command! StatusComplete lua status_filter.filter_by_status("complete")
+command! StatusAll lua status_filter.filter_by_status("all")
+command! StatusCount lua status_filter.count_status_types()
+
+" Key mappings for status filtering
+nnoremap <leader>su :StatusUnread<CR>
+nnoremap <leader>sw :StatusWIP<CR>
+nnoremap <leader>sc :StatusComplete<CR>
+nnoremap <leader>sa :StatusAll<CR>
+nnoremap <leader>ss :StatusCount<CR>
