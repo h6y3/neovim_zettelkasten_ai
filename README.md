@@ -425,3 +425,4 @@ Also check your file ignoring patterns to ensure you're not searching through la
 
 6. **NERDTree sorting not working**: If NERDTree sorting by modification time isn't working, try refreshing NERDTree with the `R` key while NERDTree is focused, or toggle the sort mode with `<leader>ns` and then back again.
 
+
