@@ -534,6 +534,15 @@ require("lazy").setup({
         max_tokens = 8192, -- Increased token limit
       },
       
+      -- OpenAI configuration as fallback
+      openai = {
+        endpoint = "https://api.openai.com/v1",
+        model = "gpt-4o-mini", -- GPT-4o Mini for cost-effective performance
+        timeout = 60000,
+        temperature = 0,
+        max_tokens = 4096,
+      },
+      
       behaviour = {
         auto_set_highlight_group = true,
         auto_set_keymaps = true,
@@ -541,6 +550,7 @@ require("lazy").setup({
         enable_token_counting = true,
         enable_cursor_planning_mode = true, -- Enable for better model compatibility
         enable_claude_text_editor_tool_mode = true, -- Enable Claude Text Editor Tool mode
+        enable_rag = true, -- Enable RAG for better context-aware responses
       },
       
       mappings = {
@@ -561,6 +571,11 @@ require("lazy").setup({
         toggle = {
           debug = "<leader>ad",
           hint = "<leader>ah",
+          rag = "<leader>ag", -- Toggle RAG service
+        },
+        rag = {
+          index = "<leader>ai", -- Manually trigger indexing
+          query = "<leader>aq", -- Manually query the RAG service
         },
       },
     },
