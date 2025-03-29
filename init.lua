@@ -553,6 +553,13 @@ require("lazy").setup({
         enable_rag = true, -- Enable RAG for better context-aware responses
       },
       
+      -- RAG service configuration
+      rag = {
+        host_mount = vim.fn.expand("~/Documents"), -- Index documents from this directory
+        llm_model = "gpt-3.5-turbo", -- Cost-effective model for RAG queries
+        embed_model = "text-embedding-3-small", -- Efficient embedding model
+      },
+      
       mappings = {
         ask = "<leader>aa", -- Ask AI about code
         edit = "<leader>ae", -- Edit with AI assistance
