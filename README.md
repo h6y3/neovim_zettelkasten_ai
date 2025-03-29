@@ -1,6 +1,6 @@
 # Neovim Configuration
 
-A clean, efficient Neovim setup focused on Markdown editing and templating, featuring the Seoul256 color scheme with enhanced markdown link autocompletion and backlink features.
+A clean, efficient Neovim setup focused on Markdown editing and templating, featuring the Seoul256 color scheme with enhanced markdown link autocompletion, backlink features, and AI-powered editing with Claude 3.7 Sonnet.
 
 ## Table of Contents
 
@@ -13,15 +13,18 @@ A clean, efficient Neovim setup focused on Markdown editing and templating, feat
 - [NERDTree (File Explorer)](#nerdtree-file-explorer)
 - [Telescope (Fuzzy Finder)](#telescope-fuzzy-finder)
 - [Text Manipulation Plugins](#text-manipulation-plugins)
+- [AI-Powered Editing with Avante.nvim](#ai-powered-editing-with-avantenvm)
 - [Templating System](#templating-system)
 - [Creating Templates](#creating-templates)
 - [Using Templates](#using-templates)
 - [Template Variables](#template-variables)
 - [Tag System](#tag-system)
+- [Status Filtering](#status-filtering)
 - [Key Mappings](#key-mappings)
 - [General Navigation](#general-navigation)
 - [File Operations](#file-operations)
 - [Markdown Specific](#markdown-specific)
+- [AI Assistant](#ai-assistant)
 - [Searching](#searching)
 - [Performance Optimizations](#performance-optimizations)
 - [Custom Functions](#custom-functions)
@@ -60,16 +63,12 @@ mkdir -p ~/.config/nvim/templates
 
 5. Add at least a basic skeleton.md template to the templates directory.
 
-6. Launch Neovim. Vim-plug will automatically install and plugins will be installed:
+6. Get an Anthropic API key (for Claude 3.7) from [Anthropic's website](https://console.anthropic.com/).
+
+7. Launch Neovim. Lazy.nvim will automatically install the plugins:
 
 ```bash
 nvim
-```
-
-7. Inside Neovim, install all plugins:
-
-```vim
-:PlugInstall
 ```
 
 ## Plugins
@@ -86,14 +85,17 @@ This configuration includes the following plugins:
 - **auto-pairs**: Auto-close brackets and quotes
 - **telescope.nvim**: Fuzzy finder for files and text
 - **plenary.nvim**: Lua utilities (required by telescope)
+- **avante.nvim**: AI-powered code and text assistance using Claude 3.7 Sonnet
+- **img-clip.nvim**: Support for image pasting
+- **render-markdown.nvim**: Enhanced markdown rendering
 
 ## Seoul256 Color Scheme
 
 The configuration uses the Seoul256 color scheme, a low-contrast Vim color scheme that works well for extended editing sessions. The dark mode is enabled by default:
 
-```vim
-set background=dark
-silent! colorscheme seoul256
+```lua
+vim.opt.background = "dark"
+vim.cmd([[colorscheme seoul256]])
 ```
 
 ## Markdown Workflow (mkdnflow)
@@ -176,11 +178,6 @@ The configuration includes a custom function to sort files by modification time 
 - Toggle between time-based and alphabetical sorting with `<leader>ns`
 - Visual feedback in the command line when toggling sort modes
 
-```vim
-" Set NERDTree to sort by timestamp (newest first)
-let g:NERDTreeSortOrder = ['\/$', '[[-timestamp]]', '*']
-```
-
 ## Telescope (Fuzzy Finder)
 
 Integrated Telescope for powerful fuzzy finding, with performance optimizations for better responsiveness:
@@ -221,6 +218,35 @@ Several plugins to enhance text editing capabilities:
   - `ds"`: Delete surrounding quotes
   - `ysiw]`: Surround word with brackets
 - **auto-pairs**: Automatically insert closing brackets, quotes, etc.
+
+## AI-Powered Editing with Avante.nvim
+
+Avante.nvim provides AI-powered assistance for coding and writing using Anthropic's Claude 3.7 Sonnet model:
+
+- **AI Code Assistance**: Get intelligent suggestions for improving or modifying your code
+- **Text Generation**: Generate high-quality text for documentation, comments, or explanations
+- **Claude 3.7 Integration**: Uses the latest Claude 3.7 Sonnet model for state-of-the-art performance
+- **Improved Code Editing**: Uses Claude's Text Editor Tool mode for more precise code edits
+- **Image Support**: Paste images in your AI queries for better understanding and context
+- **Markdown Rendering**: Enhanced markdown rendering in AI responses
+
+### Key features:
+
+- **Intelligent Coding**: Get help with writing, debugging, and refactoring code
+- **Context-Aware**: Understands your codebase and previous interactions
+- **Customizable**: Configure model parameters and UI behavior
+- **Tool Integration**: Uses various tools to provide better assistance
+- **Prompt Caching**: Improves performance for repeated analysis
+
+### Key mappings:
+
+- `<leader>aa`: Ask the AI about your code
+- `<leader>ae`: Edit your code with AI assistance
+- `<leader>ar`: Refresh AI response
+
+### Setup:
+
+The plugin requires an API key from Anthropic. On first use, Avante will prompt you to enter your API key, or you can set the `ANTHROPIC_API_KEY` environment variable.
 
 ## Templating System
 
@@ -265,6 +291,7 @@ The `{{cursor}}` marker will be replaced with an empty string, and the cursor wi
 - `{{title}}`: Title from filename or specified during creation
 - `{{tags}}`: Tags specified during template application
 - `{{cursor}}`: Specifies where the cursor should be positioned after applying the template
+- `{{status}}`: Status field (defaults to "unread" in skeleton.md)
 
 ## Tag System
 
@@ -273,6 +300,23 @@ The configuration includes a tagging system for markdown files:
 - **Tag Formatting**: Tags are automatically formatted as `[[tag]]`
 - **Tag Input**: Enter tags separated by commas when creating a file
 - **Tag Prompt**: Automatically prompted to enter tags when using templates
+
+## Status Filtering
+
+The configuration includes a status filtering system for markdown files:
+
+- **Status Type**: Filter files by status type (unread, wip, complete)
+- **Status Display**: Shows file status in search results
+- **Status Count**: Count files by status type
+- **Status Editing**: Change status directly from the filter view
+
+### Key mappings:
+
+- `<leader>su`: Show unread files
+- `<leader>sw`: Show work-in-progress files
+- `<leader>sc`: Show completed files
+- `<leader>sa`: Show all files
+- `<leader>ss`: Show status counts
 
 ## Key Mappings
 
@@ -300,6 +344,12 @@ The configuration includes a tagging system for markdown files:
 - `<leader>dl`: Destroy link
 - `]]`: Jump to next heading
 - `[[`: Jump to previous heading
+
+### AI Assistant
+
+- `<leader>aa`: Ask the AI assistant
+- `<leader>ae`: Edit with AI assistance
+- `<leader>ar`: Refresh AI response
 
 ### Searching
 
@@ -350,10 +400,10 @@ The configuration includes several custom functions:
 
 You can customize this configuration by:
 
-1. Editing the `init.vim` file directly
+1. Editing the `init.lua` file directly
 2. Adding your own templates to the templates directory
 3. Adjusting plugin settings in the Lua blocks
-4. Adding or removing plugins in the vim-plug section
+4. Adding or removing plugins in the lazy.nvim section
 
 ### Example: Adding a Custom Template
 
@@ -384,15 +434,15 @@ Then use it with `:Template note.md`. The cursor will be automatically positione
 
 1. **Error with mkdnflow functions**: If you see errors related to mkdnflow functions not being found, make sure you're using the latest version of the plugin and have specified the `dev` branch:
 
-```vim
-Plug 'jakewvincent/mkdnflow.nvim', { 'branch': 'dev' }
+```lua
+branch = "dev",
 ```
 
 2. **Autowriting not working**: If files aren't saving automatically when navigating, check that `autowriteall` is set for markdown files:
 
-```vim
-" Add this to your configuration if needed
-autocmd FileType markdown setlocal autowriteall
+```lua
+-- Add this to your configuration if needed
+vim.opt_local.autowriteall = true
 ```
 
 3. **Template directory not found**: If templates aren't working, ensure your template directory exists:
@@ -424,5 +474,9 @@ sudo apt install ripgrep
 Also check your file ignoring patterns to ensure you're not searching through large binary files or node_modules directories.
 
 6. **NERDTree sorting not working**: If NERDTree sorting by modification time isn't working, try refreshing NERDTree with the `R` key while NERDTree is focused, or toggle the sort mode with `<leader>ns` and then back again.
+
+7. **Avante API key issues**: If you're having trouble with the Anthropic API key, make sure it's correctly set in your environment as `ANTHROPIC_API_KEY` or enter it when prompted by Avante.
+
+8. **Avante not showing responses**: Make sure you have the correct model string (`claude-3-7-sonnet-20250219`) and ensure the timeout is sufficient (30000ms or higher).
 
 

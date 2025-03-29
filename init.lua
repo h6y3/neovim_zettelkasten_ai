@@ -492,6 +492,79 @@ require("lazy").setup({
       })
     end
   },
+
+  -- Avante.nvim for AI-powered coding with Claude 3.7 Sonnet
+  {
+    "yetone/avante.nvim",
+    event = "VeryLazy", -- Load after initial UI
+    build = "make", -- Uses pre-built binaries
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      "stevearc/dressing.nvim",
+      "nvim-lua/plenary.nvim", 
+      "MunifTanjim/nui.nvim",
+      
+      -- Optional but recommended for markdown rendering
+      {
+        "MeanderingProgrammer/render-markdown.nvim",
+        opts = {
+          file_types = { "markdown", "Avante" },
+        },
+        ft = { "markdown", "Avante" },
+      },
+      
+      -- Optional for image pasting support
+      {
+        "HakonHarnes/img-clip.nvim",
+        event = "BufEnter",
+        opts = {
+          default_dir = "assets",
+        },
+      },
+    },
+    opts = {
+      provider = "claude", -- Set Claude as the default provider
+      
+      -- Claude specific configuration
+      claude = {
+        endpoint = "https://api.anthropic.com",
+        model = "claude-3-7-sonnet-20250219", -- Claude 3.7 Sonnet model string
+        timeout = 60000, -- Increased timeout for this model (in milliseconds)
+        temperature = 0, -- Set to 0 for most deterministic responses
+        max_tokens = 8192, -- Increased token limit
+      },
+      
+      behaviour = {
+        auto_set_highlight_group = true,
+        auto_set_keymaps = true,
+        auto_apply_diff_after_generation = false,
+        enable_token_counting = true,
+        enable_cursor_planning_mode = true, -- Enable for better model compatibility
+        enable_claude_text_editor_tool_mode = true, -- Enable Claude Text Editor Tool mode
+      },
+      
+      mappings = {
+        ask = "<leader>aa", -- Ask AI about code
+        edit = "<leader>ae", -- Edit with AI assistance
+        refresh = "<leader>ar", -- Refresh AI response
+        diff = {
+          ours = "co",
+          theirs = "ct", 
+          both = "cb",
+          next = "]x",
+          prev = "[x",
+        },
+        submit = {
+          normal = "<CR>",
+          insert = "<C-s>",
+        },
+        toggle = {
+          debug = "<leader>ad",
+          hint = "<leader>ah",
+        },
+      },
+    },
+  },
 })
 
 -- Alt+] mapping for markdown files - move past closing ]]
@@ -732,4 +805,3 @@ else
   vim.keymap.set("n", "<leader>sa", ":StatusAll<CR>", {silent = true})
   vim.keymap.set("n", "<leader>ss", ":StatusCount<CR>", {silent = true})
 end
-
