@@ -166,14 +166,29 @@ require("lazy").setup({
     },
   },
   
-  -- NERDTree - File explorer
+  -- NERDTree - File explorer - MODIFIED TO LOAD AT STARTUP
   {
     "preservim/nerdtree",
-    cmd = {"NERDTreeToggle", "NERDTreeFind"}, -- Add command loading
-    keys = {
-      { "<leader>e", ":NERDTreeToggle<CR>", desc = "Toggle NERDTree" },
-      { "<leader>f", ":NERDTreeFind<CR>", desc = "Find in NERDTree" },
-      { "<leader>ns", function()
+    -- Removed cmd and keys options to prevent lazy loading
+    init = function()
+      vim.g.NERDTreeSortOrder = {[[\/$]], '[[-timestamp]]', '*'}
+      vim.g.NERDTreeSortByTime = 1
+      vim.g.NERDTreeShowHidden = 1  -- Show hidden files
+    end,
+    config = function()
+      -- Auto open NERDTree when Vim starts
+      vim.api.nvim_create_autocmd("VimEnter", {
+        callback = function()
+          vim.cmd("NERDTree")
+          -- Move cursor to the main window if it exists
+          vim.cmd("wincmd p")
+        end,
+      })
+      
+      -- Keymaps for NERDTree
+      vim.keymap.set("n", "<leader>e", ":NERDTreeToggle<CR>", {silent = true, desc = "Toggle NERDTree"})
+      vim.keymap.set("n", "<leader>f", ":NERDTreeFind<CR>", {silent = true, desc = "Find in NERDTree"})
+      vim.keymap.set("n", "<leader>ns", function()
         if vim.g.NERDTreeSortByTime == 1 then
           vim.g.NERDTreeSortByTime = 0
           vim.g.NERDTreeSortOrder = {[[\/$]], '*'}
@@ -191,12 +206,8 @@ require("lazy").setup({
             call NERDTreeRender()
           endif
         ]])
-      end, desc = "Toggle NERDTree sort mode" },
-    },
-    init = function() -- Changed from config to init
-      vim.g.NERDTreeSortOrder = {[[\/$]], '[[-timestamp]]', '*'}
-      vim.g.NERDTreeSortByTime = 1
-    end,
+      end, {desc = "Toggle NERDTree sort mode"})
+    end
   },
   
   -- Text manipulation plugins
@@ -827,3 +838,4 @@ else
   vim.keymap.set("n", "<leader>sa", ":StatusAll<CR>", {silent = true})
   vim.keymap.set("n", "<leader>ss", ":StatusCount<CR>", {silent = true})
 end
+
