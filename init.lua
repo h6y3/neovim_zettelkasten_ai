@@ -528,7 +528,7 @@ require("lazy").setup({
       -- Claude specific configuration
       claude = {
         endpoint = "https://api.anthropic.com",
-        model = "claude-3-5-sonnet-20241022", -- Claude 3.5 Sonnet model string
+        model = "claude-3-7-sonnet-latest", -- Claude 3.7 Sonnet model string
         timeout = 60000, -- Increased timeout for this model (in milliseconds)
         temperature = 0, -- Set to 0 for most deterministic responses
         max_tokens = 8192, -- Increased token limit
