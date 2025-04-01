@@ -780,9 +780,16 @@ autocmd("FileType", {
     vim.opt_local.textwidth = 80
     vim.opt_local.conceallevel = 2
     vim.opt_local.autowriteall = true
+    -- Enable automatic formatting for markdown files
+    vim.opt_local.formatoptions:append("a") -- Auto-format paragraphs while typing
+    vim.opt_local.formatoptions:append("t") -- Auto-wrap text using textwidth
+    vim.opt_local.formatoptions:append("w") -- Trailing whitespace indicates paragraph continues
+    vim.opt_local.formatoptions:append("q") -- Allow formatting of comments with gq
     -- Add markdown-specific mappings
     vim.keymap.set("i", ";l", "[]()<Left><Left><Left>", {buffer = true})
     vim.keymap.set("i", ";w", "[[]]<Left><Left>", {buffer = true})
+    -- Add mapping to reformat current paragraph
+    vim.keymap.set("n", "<leader>gq", "gqip", {buffer = true, desc = "Format current paragraph"})
   end,
 })
 

@@ -240,6 +240,20 @@ Text editing utilities:
   - `ysiw]`: Surround word with brackets
 - **auto-pairs**: Automatically insert closing brackets and quotes
 
+### Markdown Formatting
+
+Consistent text formatting for markdown files:
+
+- Hard wrapping at 80 characters with `textwidth=80`
+- Automatic paragraph formatting while typing with `formatoptions=atwq`:
+  - `a`: Automatically format paragraphs as you type
+  - `t`: Auto-wrap text using textwidth
+  - `w`: Trailing whitespace indicates paragraph continues
+  - `q`: Allow formatting of comments with `gq`
+- Reformat existing paragraphs with `<leader>gq`
+- Spell checking enabled by default
+- Automatic file saving when navigating between files
+
 ## Keyboard Shortcuts
 
 ### General Navigation
@@ -267,6 +281,7 @@ Text editing utilities:
 - `]]`: Jump to next heading
 - `[[`: Jump to previous heading
 - `<leader>bl`: Search for backlinks
+- `<leader>gq`: Reformat current paragraph to respect textwidth
 
 ### Status Management
 
