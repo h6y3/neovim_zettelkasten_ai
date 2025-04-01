@@ -128,6 +128,10 @@ Track references to your notes with:
 
 Track the progress of your notes with a custom status system:
 
+- **unread**: Indicates that the file has not been read yet. It is typically used for notes or documents that the user intends to review later.
+- **wip** (Work In Progress): Signifies that the file is still being worked on. It may contain incomplete thoughts, drafts, or ongoing projects that require further development.
+- **complete**: Indicates that the file is finished and no further changes are expected. It is used for finalized notes or documents that are ready for reference or sharing.
+
 - Filter files by status (unread, wip, complete)
 - Count files by status with `<leader>ss`
 - Change status directly from filter view with `<C-s>`
