@@ -830,6 +830,10 @@ else
     status_filter.filter_by_status("complete")
   end, {})
 
+  vim.api.nvim_create_user_command("StatusDelete", function()
+    status_filter.filter_by_status("delete")
+  end, {})
+
   vim.api.nvim_create_user_command("StatusAll", function()
     status_filter.filter_by_status("all")
   end, {})
@@ -842,6 +846,7 @@ else
   vim.keymap.set("n", "<leader>su", ":StatusUnread<CR>", {silent = true})
   vim.keymap.set("n", "<leader>sw", ":StatusWIP<CR>", {silent = true})
   vim.keymap.set("n", "<leader>sc", ":StatusComplete<CR>", {silent = true})
+  vim.keymap.set("n", "<leader>sd", ":StatusDelete<CR>", {silent = true})
   vim.keymap.set("n", "<leader>sa", ":StatusAll<CR>", {silent = true})
   vim.keymap.set("n", "<leader>ss", ":StatusCount<CR>", {silent = true})
 end

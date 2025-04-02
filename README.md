@@ -131,8 +131,9 @@ Track the progress of your notes with a custom status system:
 - **unread**: Indicates that the file has not been read yet. It is typically used for notes or documents that the user intends to review later.
 - **wip** (Work In Progress): Signifies that the file is still being worked on. It may contain incomplete thoughts, drafts, or ongoing projects that require further development.
 - **complete**: Indicates that the file is finished and no further changes are expected. It is used for finalized notes or documents that are ready for reference or sharing.
+- **delete**: Marks files that are candidates for deletion. This status helps identify content that is no longer needed or relevant but allows for review before permanent removal.
 
-- Filter files by status (unread, wip, complete)
+- Filter files by status (unread, wip, complete, delete)
 - Count files by status with `<leader>ss`
 - Change status directly from filter view with `<C-s>`
 - View all statuses with `<leader>sa`
@@ -141,6 +142,7 @@ Key mappings:
 - `<leader>su`: Show unread files
 - `<leader>sw`: Show work-in-progress files
 - `<leader>sc`: Show completed files
+- `<leader>sd`: Show files marked for deletion
 
 ### Templating System
 
@@ -292,6 +294,7 @@ Consistent text formatting for markdown files:
 - `<leader>su`: Show unread files
 - `<leader>sw`: Show work-in-progress files
 - `<leader>sc`: Show completed files
+- `<leader>sd`: Show files marked for deletion
 - `<leader>sa`: Show all files with status
 - `<leader>ss`: Count files by status
 
