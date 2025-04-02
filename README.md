@@ -248,17 +248,39 @@ Text editing utilities:
 
 ### Markdown Formatting
 
-Consistent text formatting for markdown files:
+Consistent text formatting for markdown files with both soft and hard wrapping options:
 
-- Hard wrapping at 80 characters with `textwidth=80`
-- Automatic paragraph formatting while typing with `formatoptions=atwq`:
-  - `a`: Automatically format paragraphs as you type
-  - `t`: Auto-wrap text using textwidth
-  - `w`: Trailing whitespace indicates paragraph continues
-  - `q`: Allow formatting of comments with `gq`
-- Reformat existing paragraphs with `<leader>gq`
+#### Soft Wrapping (Visual Only)
+- Enabled by default with `wrap = true` and `linebreak = true`
+- Text appears wrapped on screen but no actual line breaks are inserted in the file
+- Preserves paragraph as a single line in the file
+- Shows `↪` symbol at the start of wrapped lines for clarity
+- Preserves indentation in wrapped lines with `breakindent = true`
+
+#### Hard Wrapping (Modifies File)
+- Set to 80 characters with `textwidth=80`
+- Adds actual carriage returns/line breaks to the file
+- Available through manual commands:
+  - `<leader>gq`: Format current paragraph (adds line breaks at 80 chars)
+  - `<leader>fw`: Format and wrap paragraph (preserves cursor position)
+
+#### Auto-Formatting Control
+- Auto-formatting is **disabled by default** to prevent disruptive reformatting
+- Controlled by the `formatoptions` setting:
+  - `t`: Auto-wrap text using textwidth (enabled)
+  - `c`: Auto-wrap comments using textwidth (enabled)
+  - `q`: Allow formatting of comments with `gq` (enabled)
+  - `n`: Recognize numbered lists and indent properly (enabled)
+  - `j`: Remove comment leader when joining lines (enabled)
+  - `r`, `o`: Insert comment leader after Enter/o/O in insert mode (enabled)
+  - `b`: Only auto-wrap if you enter a blank at or before textwidth (enabled)
+  - `a`: Automatically format paragraphs as you type (**disabled by default**)
+- Toggle auto-formatting with `<leader>tf` custom mapping
+  - When enabled, automatically inserts line breaks as you type
+
+#### Additional Features
 - Spell checking enabled by default
-- Automatic file saving when navigating between files
+- Automatic file saving when navigating between files via `autowriteall`
 
 ## Keyboard Shortcuts
 
@@ -287,7 +309,9 @@ Consistent text formatting for markdown files:
 - `]]`: Jump to next heading
 - `[[`: Jump to previous heading
 - `<leader>bl`: Search for backlinks
-- `<leader>gq`: Reformat current paragraph to respect textwidth
+- `<leader>gq`: Reformat current paragraph (adds hard line breaks)
+- `<leader>fw`: Format and wrap current paragraph (preserves cursor position)
+- `<leader>tf`: Toggle auto-formatting on/off
 
 ### Status Management
 
@@ -403,4 +427,9 @@ Use it with `:Template note.md`
    export ANTHROPIC_API_KEY="your_api_key_here"
    ```
 
-6. **RAG functionality not working**: Ensure your Documents directory is properly set and contains relevant files.:
+6. **RAG functionality not working**: Ensure your Documents directory is properly set and contains relevant files.
+
+7. **Unexpected text formatting**: If text is being reformatted unexpectedly:
+   - Check if auto-formatting is enabled with `:set formatoptions?`
+   - If it contains 'a', auto-formatting is on - toggle it off with `<leader>tf`
+   - For manual control, use `<leader>gq` to format only when needed

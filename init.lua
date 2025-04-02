@@ -776,20 +776,57 @@ autocmd("BufReadPost", {
 autocmd("FileType", {
   pattern = "markdown",
   callback = function()
+    -- Basic settings
     vim.opt_local.spell = true
     vim.opt_local.textwidth = 80
     vim.opt_local.conceallevel = 2
     vim.opt_local.autowriteall = true
-    -- Enable automatic formatting for markdown files
-    vim.opt_local.formatoptions:append("a") -- Auto-format paragraphs while typing
-    vim.opt_local.formatoptions:append("t") -- Auto-wrap text using textwidth
-    vim.opt_local.formatoptions:append("w") -- Trailing whitespace indicates paragraph continues
-    vim.opt_local.formatoptions:append("q") -- Allow formatting of comments with gq
+    
+    -- Improved soft wrapping for prose
+    vim.opt_local.wrap = true
+    vim.opt_local.linebreak = true  -- Break lines at word boundaries
+    vim.opt_local.breakindent = true  -- Preserve indentation in wrapped lines
+    vim.opt_local.showbreak = "↪ "  -- Show a symbol at the start of wrapped lines
+    
+    -- Reset formatoptions to defaults first
+    vim.opt_local.formatoptions = vim.opt_local.formatoptions
+    
+    -- Carefully chosen formatoptions for better Markdown editing
+    vim.opt_local.formatoptions:remove("a")  -- Don't auto-format paragraphs while typing (causes issues)
+    vim.opt_local.formatoptions:append("t")  -- Auto-wrap text using textwidth
+    vim.opt_local.formatoptions:append("n")  -- Recognize numbered lists and indent properly
+    vim.opt_local.formatoptions:append("r")  -- Insert comment leader after hitting Enter
+    vim.opt_local.formatoptions:append("o")  -- Insert comment leader after hitting 'o' or 'O'
+    vim.opt_local.formatoptions:append("q")  -- Allow formatting of comments with gq
+    vim.opt_local.formatoptions:append("j")  -- Remove comment leader when joining lines
+    vim.opt_local.formatoptions:append("c")  -- Auto-wrap comments using textwidth
+    vim.opt_local.formatoptions:append("b")  -- Only auto-wrap if you enter a blank at or before textwidth
+    
+    -- Better list handling
+    vim.opt_local.autoindent = true
+    vim.opt_local.smartindent = false  -- SmartIndent can interfere with Markdown
+    vim.opt_local.cindent = false      -- CIndent can also interfere with Markdown
+    
     -- Add markdown-specific mappings
     vim.keymap.set("i", ";l", "[]()<Left><Left><Left>", {buffer = true})
     vim.keymap.set("i", ";w", "[[]]<Left><Left>", {buffer = true})
+    
     -- Add mapping to reformat current paragraph
     vim.keymap.set("n", "<leader>gq", "gqip", {buffer = true, desc = "Format current paragraph"})
+    
+    -- Add mapping to manually wrap text at cursor
+    vim.keymap.set("n", "<leader>fw", "gwip", {buffer = true, desc = "Format and wrap current paragraph"})
+    
+    -- Add mapping to toggle auto-formatting
+    vim.keymap.set("n", "<leader>tf", function()
+      if vim.opt_local.formatoptions:get().a then
+        vim.opt_local.formatoptions:remove("a")
+        print("Auto-formatting disabled")
+      else
+        vim.opt_local.formatoptions:append("a")
+        print("Auto-formatting enabled")
+      end
+    end, {buffer = true, desc = "Toggle auto-formatting"})
   end,
 })
 
