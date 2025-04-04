@@ -534,7 +534,7 @@ require("lazy").setup({
       },
     },
     opts = {
-      provider = "claude", -- Set Claude as the default provider
+      provider = "claude", 
       
       -- Claude specific configuration
       claude = {
@@ -544,8 +544,17 @@ require("lazy").setup({
         temperature = 0, -- Set to 0 for most deterministic responses
         max_tokens = 8192, -- Increased token limit
       },
-      
-      -- OpenAI configuration as fallback
+
+      -- Gemini specific configuration
+      gemini = {
+        endpoint = "https://generativelanguage.googleapis.com/v1beta/models",
+        model = "gemini-2.0-flash",
+        timeout = 60000, -- Timeout in milliseconds
+        temperature = 0,
+        max_tokens = 8192,
+      },
+
+      -- OpenAI specific configuration 
       openai = {
         endpoint = "https://api.openai.com/v1",
         model = "gpt-4o-mini", -- GPT-4o Mini for cost-effective performance
