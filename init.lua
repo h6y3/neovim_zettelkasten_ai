@@ -798,18 +798,16 @@ autocmd("FileType", {
     vim.opt_local.showbreak = "↪ "  -- Show a symbol at the start of wrapped lines
     
     -- Reset formatoptions to defaults first
-    vim.opt_local.formatoptions = vim.opt_local.formatoptions
+    vim.opt_local.formatoptions = ""
     
     -- Carefully chosen formatoptions for better Markdown editing
-    vim.opt_local.formatoptions:remove("a")  -- Don't auto-format paragraphs while typing (causes issues)
-    vim.opt_local.formatoptions:append("t")  -- Auto-wrap text using textwidth
+    -- IMPORTANT: We're NOT using 't' option to prevent automatic hard wrapping
+    -- Only add options that don't cause automatic hard wrapping
     vim.opt_local.formatoptions:append("n")  -- Recognize numbered lists and indent properly
     vim.opt_local.formatoptions:append("r")  -- Insert comment leader after hitting Enter
     vim.opt_local.formatoptions:append("o")  -- Insert comment leader after hitting 'o' or 'O'
     vim.opt_local.formatoptions:append("q")  -- Allow formatting of comments with gq
     vim.opt_local.formatoptions:append("j")  -- Remove comment leader when joining lines
-    vim.opt_local.formatoptions:append("c")  -- Auto-wrap comments using textwidth
-    vim.opt_local.formatoptions:append("b")  -- Only auto-wrap if you enter a blank at or before textwidth
     
     -- Better list handling
     vim.opt_local.autoindent = true
@@ -820,22 +818,22 @@ autocmd("FileType", {
     vim.keymap.set("i", ";l", "[]()<Left><Left><Left>", {buffer = true})
     vim.keymap.set("i", ";w", "[[]]<Left><Left>", {buffer = true})
     
-    -- Add mapping to reformat current paragraph
-    vim.keymap.set("n", "<leader>gq", "gqip", {buffer = true, desc = "Format current paragraph"})
+    -- Add mapping to manually format current paragraph (only when you want hard wraps)
+    vim.keymap.set("n", "<leader>gq", "gqip", {buffer = true, desc = "Format current paragraph with hard wraps"})
     
     -- Add mapping to manually wrap text at cursor
     vim.keymap.set("n", "<leader>fw", "gwip", {buffer = true, desc = "Format and wrap current paragraph"})
     
-    -- Add mapping to toggle auto-formatting
+    -- Add mapping to toggle auto-formatting (for when you DO want hard wraps)
     vim.keymap.set("n", "<leader>tf", function()
-      if vim.opt_local.formatoptions:get().a then
-        vim.opt_local.formatoptions:remove("a")
-        print("Auto-formatting disabled")
+      if vim.opt_local.formatoptions:get().t then
+        vim.opt_local.formatoptions:remove("t")
+        print("Auto hard-wrapping disabled")
       else
-        vim.opt_local.formatoptions:append("a")
-        print("Auto-formatting enabled")
+        vim.opt_local.formatoptions:append("t")
+        print("Auto hard-wrapping enabled")
       end
-    end, {buffer = true, desc = "Toggle auto-formatting"})
+    end, {buffer = true, desc = "Toggle auto hard-wrapping"})
   end,
 })
 
