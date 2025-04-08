@@ -41,27 +41,46 @@ A modern Neovim setup focused on Markdown editing, note-taking, and knowledge ma
    choco install ripgrep
    ```
 
-3. Clone this repository to your Neovim configuration directory:
+3. **For Mac users**: Install Rust (required to build Avante.nvim):
+
+   ```bash
+   # Option 1: Install Rust using rustup (recommended)
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   
+   # Option 2: Install Rust using Homebrew
+   brew install rust
+   ```
+
+4. Clone this repository to your Neovim configuration directory:
 
    ```bash
    git clone https://github.com/yourusername/nvim-config.git ~/.config/nvim
    ```
 
-4. Create the templates directory:
+5. Create the templates directory:
 
    ```bash
    mkdir -p ~/.config/nvim/templates
    ```
 
-5. Copy the skeleton.md template to the templates directory.
+6. Copy the skeleton.md template to the templates directory.
 
-6. Get an Anthropic API key (for Claude 3.7) from [Anthropic's website](https://console.anthropic.com/).
+7. Get an Anthropic API key (for Claude 3.7) from [Anthropic's website](https://console.anthropic.com/).
 
-7. Launch Neovim. The lazy.nvim package manager will automatically install the plugins:
+8. Launch Neovim. The lazy.nvim package manager will automatically install the plugins:
 
    ```bash
    nvim
    ```
+
+   Note: If you encounter issues with Avante.nvim building from source, you can manually build it:
+   
+   ```bash
+   cd ~/.local/share/nvim/lazy/avante.nvim
+   make BUILD_FROM_SOURCE=true
+   ```
+   
+   Alternatively, you can modify your Lazy configuration to use prebuilt binaries instead of building from source.
 
 ## Plugins
 
@@ -427,9 +446,18 @@ Use it with `:Template note.md`
    export ANTHROPIC_API_KEY="your_api_key_here"
    ```
 
-6. **RAG functionality not working**: Ensure your Documents directory is properly set and contains relevant files.
+6. **Avante.nvim build failures on Mac**: If Avante.nvim fails to build:
+   - Ensure Rust is properly installed: `rustc --version`
+   - Try building manually:
+     ```bash
+     cd ~/.local/share/nvim/lazy/avante.nvim
+     make BUILD_FROM_SOURCE=true
+     ```
+   - If you continue to have issues, consider modifying your lazy.nvim configuration to use prebuilt binaries instead of building from source
 
-7. **Unexpected text formatting**: If text is being reformatted unexpectedly:
+7. **RAG functionality not working**: Ensure your Documents directory is properly set and contains relevant files.
+
+8. **Unexpected text formatting**: If text is being reformatted unexpectedly:
    - Check if auto-formatting is enabled with `:set formatoptions?`
    - If it contains 'a', auto-formatting is on - toggle it off with `<leader>tf`
    - For manual control, use `<leader>gq` to format only when needed
