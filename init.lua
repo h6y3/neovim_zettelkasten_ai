@@ -47,10 +47,10 @@ vim.opt.conceallevel = 2
 vim.opt.background = "dark"
 
 -- Performance optimizations
-vim.opt.maxmempattern = 2000
-vim.opt.lazyredraw = true
+vim.opt.maxmempattern = 5000  -- Increased from 2000 for better syntax highlighting
+vim.opt.lazyredraw = false    -- Disabled to improve syntax highlighting refresh
 vim.opt.shortmess:append("I")
-vim.opt.synmaxcol = 200
+vim.opt.synmaxcol = 500       -- Increased from 200 for better syntax highlighting with longer lines
 
 -- Global variables
 vim.g.markdown_template_applied = 0
@@ -97,6 +97,32 @@ _G.telescope_custom_utils = {
 
 -- Define the plugins
 require("lazy").setup({
+  -- Treesitter for better syntax highlighting
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    event = { "BufReadPost", "BufNewFile" },
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = { "python", "lua", "markdown", "markdown_inline" },
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting = false,
+        },
+        indent = { enable = true },
+        sync_install = false,
+        auto_install = true,
+      })
+      
+      -- Force syntax refresh when cursor stops moving
+      vim.api.nvim_create_autocmd({"CursorHold", "CursorHoldI"}, {
+        pattern = "*",
+        callback = function()
+          vim.cmd("syntax sync fromstart")
+        end,
+      })
+    end,
+  },
   -- Color scheme
   {
     "junegunn/seoul256.vim",
@@ -740,6 +766,7 @@ vim.keymap.set("n", "<leader>h", ":nohlsearch<CR>", {silent = true}) -- Clear se
 vim.keymap.set("n", "<leader>w", ":w<CR>", {silent = true})         -- Quick save
 vim.keymap.set("n", "<leader>q", ":q<CR>", {silent = true})         -- Quick quit
 vim.keymap.set("n", "<leader>sv", ":source $MYVIMRC<CR>", {silent = true}) -- Source init.lua
+vim.keymap.set("n", "<leader>sr", ":syntax sync fromstart<CR>", {silent = true, desc = "Refresh syntax highlighting"}) -- Manual syntax refresh
 
 -- Buffer navigation
 vim.keymap.set("n", "<leader>bn", ":bnext<CR>", {silent = true})
@@ -769,6 +796,14 @@ end, {nargs = 1, complete = "file"})
 
 -- Set up autocommands
 local autocmd = vim.api.nvim_create_autocmd
+
+-- Refresh syntax highlighting when entering a buffer
+autocmd({"BufEnter", "FileType"}, {
+  pattern = "*",
+  callback = function()
+    vim.cmd("syntax sync fromstart")
+  end,
+})
 
 -- Remember last cursor position
 autocmd("BufReadPost", {
